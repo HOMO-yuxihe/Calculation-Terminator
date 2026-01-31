@@ -1,5 +1,3 @@
-from ast import Sub
-from gc import DEBUG_LEAK
 from keyword import iskeyword
 import sys,time
 from PyQt5.QtWidgets import (
@@ -9,9 +7,13 @@ from PyQt5.QtWidgets import (
     QShortcut,QInputDialog,QListView,QMenuBar,
     QMenu,QMessageBox)
 from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
-from PyQt5.QtCore import Qt,QTimer,pyqtSignal
+from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
 from ..widgets.common import MTextEdit,MultiLineEdit
+from typing import List,Dict,Union
+
+from keyword import iskeyword
+import sys
 from typing import List,Dict,Union
 
 font1=QFont()
@@ -167,12 +169,13 @@ class VariableManager(Subwindow):
         self.setCentralWidget(self.central)
         self.mainLayout=QHBoxLayout()
         self.central.setLayout(self.mainLayout)
-        self.variables=variables
+        self.variables:List[parser.Variable]=variables
         self.varModel=QStandardItemModel()
 
         self.list=self._ListView(self)
         self.list.setFont(font2)
         self.list.setModel(self.varModel)
+        self.list.clicked.connect(self.showInfo)
         self.sidebar=QVBoxLayout()
 
         self.addBtn=QPushButton('添加')
@@ -180,6 +183,7 @@ class VariableManager(Subwindow):
         self.delBtn=QPushButton('删除')
         self.info=QTextEdit()
         self.info.setFixedWidth(150)
+        self.info.setReadOnly(1)
         self.addBtn.clicked.connect(self.addOpen)
         self.editBtn.clicked.connect(self.editOpen)
         self.delBtn.clicked.connect(self.remove)
@@ -204,15 +208,15 @@ class VariableManager(Subwindow):
         # self.windows.append(varmod)
         # print(self.windows)
     
-    
     def editOpen(self):
         def editSlot(var:parser.Variable):
             self.variables[indexes[0].row()]=var
             self.varModel.setData(indexes[0],var['id'])
+            self.showInfo()
         model=self.list.selectionModel()
         indexes=model.selectedIndexes()
         if indexes:
-            mod=VariableModifier(self,self.variables[indexes[0].row()])
+            mod=VariableModifier(self,self.variables[indexes[0].row()],self.variables)
             mod.modSignal.connect(editSlot)
             mod.show()
         else:
@@ -225,10 +229,10 @@ class VariableManager(Subwindow):
             index=indexes[0].row()
             self.varModel.removeRow(index)
             self.variables.pop(index)
+            self.showInfo()
         else:
             QMessageBox.warning(self,'错误','请选中一个变量')
-    
-    
+
     def refresh(self):
         self.varModel.clear()
         for i in self.variables:
@@ -237,8 +241,19 @@ class VariableManager(Subwindow):
                 continue
             self.varModel.appendRow(QStandardItem(i['id']))
     
-    def get(self):
-        return self.variables
+    def showInfo(self,index:QModelIndex=None):
+        if index==None:
+            indexes=self.list.selectionModel().selectedIndexes()
+            if indexes:
+                row=indexes[0].row()
+            else:
+                self.info.clear()
+                return
+        else:
+            row=index.row()
+        var=self.variables[row]
+        self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")
+    
 
 
 class MainWindow(WithSubwindow):
@@ -329,19 +344,19 @@ class MainWindow(WithSubwindow):
 
     def calc(self):
         expr=self.calc_input.toPlainText()
-        result=parser.calc(expr,self.variablemanager.get())
+        result=parser.calc(expr,self.variables)
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
         print(self.windows)
-        print(self.variablemanager.get())
+        print(self.variables)
 
         # sys.exit(0)
     
     def lagrange(self):
         limits=[i.text().strip() for i in self.lagrange_limitsInput.lines if i.text().strip()]
         target=self.lagrange_targetInput.toPlainText()
-        res=parser.lagrange(limits,target,self.variablemanager.get())
+        res=parser.lagrange(limits,target,self.variables)
         if isinstance(res,str):
             self.windows.append(OutputWindow(self,res))
         else:
@@ -363,3 +378,10 @@ class MainWindow(WithSubwindow):
         super().closeEvent(event)
         self.close()
         sys.exit(0)
+        
+            
+app=QApplication(sys.argv)
+
+window=MainWindow()
+window.show()
+sys.exit(app.exec_())
