@@ -1,0 +1,24 @@
+[build-system]
+# 构建依赖，指定setuptools和wheel版本，避免兼容问题
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# 项目基础信息，仅保留名称、版本、作者等核心属性
+name = "calcterm"
+version = "0.1.0"
+authors = [
+  { name="HOMO-yuxihe", email="2459379510@qq.com" }
+]
+description = "基于PyQt5+SymPy的科学计算器"
+readme = "README.md"
+requires-python = ">=3.8"  # 适配你的Python版本
+dependencies = [
+  "PyQt5>=5.15.0",
+  "sympy>=1.11"
+]
+
+[tool.setuptools]
+# 新版规范：包路径配置移到这个节点下
+packages = ["src/calcterm"]
+# package_dir = {""="src"}  # 告诉setuptools主包在src目录下
