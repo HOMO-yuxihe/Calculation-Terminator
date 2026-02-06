@@ -5,11 +5,11 @@ from PyQt5.QtWidgets import (
     QWidget,QVBoxLayout,QHBoxLayout,QTextEdit,
     QPushButton,QAction,QScrollArea,QLineEdit,
     QShortcut,QInputDialog,QListView,QMenuBar,
-    QMenu,QMessageBox)
+    QMenu,QMessageBox,QDialog)
 from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
 from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
-from ..widgets.common import MTextEdit,MultiLineEdit
+from calcterm.widgets.common import MTextEdit,MultiLineEdit
 from typing import List,Dict,Union
 
 from keyword import iskeyword
@@ -88,21 +88,18 @@ class OutputWindow(Subwindow):
             result=parser.parse_expr(f'simplify({content})')
             self.display.setPlainText(str(result.evalf(digit)))
 
-class VariableModifier(QMainWindow):
-    modSignal=pyqtSignal(dict)
+class VariableModifier(QDialog):
 
     def __init__(self,parent,variable:parser.Variable={'id':'','name':'','assumptions':{}},variableList=[]):
         super().__init__(parent=parent)
-        self.setWindowModality(1)
         self.varIds=[i['id'] for i in variableList]
         self.setWindowTitle('修改变量')
         # self.setMinimumSize(200,100)
         self.setFont(font1)
-        self.central=QWidget()
-        self.setCentralWidget(self.central)
+        self.setSizePolicy(0,0)
 
         self.mainLayout=QVBoxLayout()
-        self.central.setLayout(self.mainLayout)
+        self.setLayout(self.mainLayout)
         self.idLayout=QHBoxLayout()
         self.nameLayout=QHBoxLayout()
         self.exitLayout=QHBoxLayout()
@@ -112,6 +109,7 @@ class VariableModifier(QMainWindow):
 
         self.idTip=QLabel('变量标识符:')
         self.id=QLineEdit(variable['id'])
+        self.srcid=variable['id']
         self.idLayout.addWidget(self.idTip)
         self.idLayout.addWidget(self.id)
         self.nameTip=QLabel('变量显示名:')
@@ -121,9 +119,10 @@ class VariableModifier(QMainWindow):
         self.addBtn=QPushButton('完成')
         self.addBtn.clicked.connect(self.mod)
         self.cancelBtn=QPushButton('取消')
-        self.cancelBtn.clicked.connect(lambda:self.close())
+        self.cancelBtn.clicked.connect(self.reject)
         self.exitLayout.addWidget(self.addBtn)
         self.exitLayout.addWidget(self.cancelBtn)
+        self.res={}
     
     def mod(self):
         if not self.id.text().strip():
@@ -138,11 +137,18 @@ class VariableModifier(QMainWindow):
         if not self.id.text().strip().isidentifier():
             QMessageBox.warning(self,'错误','标识符不符合命名格式')
             return
-        if self.id.text() in self.varIds:
+        if self.id.text() in self.varIds and self.id.text() != self.srcid:
             QMessageBox.warning(self,'错误','标识符已存在')
             return
-        self.modSignal.emit({'id':self.id.text(),'name':self.name.text(),'assumptions':{}})
-        self.close()
+        self.res={'id':self.id.text(),'name':self.name.text(),'assumptions':{}}
+        self.accept()
+    
+    @staticmethod
+    def get(parent,variable:parser.Variable={'id':'','name':'','assumptions':{}},variableList=[]):
+        dialog=VariableModifier(parent,variable,variableList)
+        result=dialog.exec_()
+        return dialog.res,(result==QDialog.Accepted)
+
 
 class VariableManager(Subwindow):
     class _ListView(QListView):
@@ -198,27 +204,20 @@ class VariableManager(Subwindow):
         self.refresh()
     
     def addOpen(self):
-        def addSlot(var:parser.Variable):
+        var,ok=VariableModifier.get(self,variableList=self.variables)
+        if ok:
             self.variables.append(var)
             self.varModel.appendRow(QStandardItem(var['id']))
-        varmod=VariableModifier(self,variableList=self.variables)
-        varmod.show()
-        varmod.setFixedSize(varmod.size())
-        varmod.modSignal.connect(addSlot)
-        # self.windows.append(varmod)
-        # print(self.windows)
     
     def editOpen(self):
-        def editSlot(var:parser.Variable):
-            self.variables[indexes[0].row()]=var
-            self.varModel.setData(indexes[0],var['id'])
-            self.showInfo()
         model=self.list.selectionModel()
         indexes=model.selectedIndexes()
         if indexes:
-            mod=VariableModifier(self,self.variables[indexes[0].row()],self.variables)
-            mod.modSignal.connect(editSlot)
-            mod.show()
+            mod,ok=VariableModifier.get(self,self.variables[indexes[0].row()],self.variables)
+            if ok:
+                self.variables[indexes[0].row()]=mod
+                self.varModel.setData(indexes[0],mod['id'])
+                self.showInfo()
         else:
             QMessageBox.warning(self,'错误','请选中一个变量')
 
@@ -377,3 +376,10 @@ class MainWindow(WithSubwindow):
         super().closeEvent(event)
         self.close()
         sys.exit(0)
+
+if __name__ == '__main__':
+    app=QApplication(sys.argv)
+
+    window=MainWindow()
+    window.show()
+    sys.exit(app.exec_())
