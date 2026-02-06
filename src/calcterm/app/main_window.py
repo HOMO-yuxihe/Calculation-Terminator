@@ -96,7 +96,6 @@ class VariableModifier(QMainWindow):
         self.setWindowModality(1)
         self.varIds=[i['id'] for i in variableList]
         self.setWindowTitle('修改变量')
-        self.setFixedSize(400,100)
         # self.setMinimumSize(200,100)
         self.setFont(font1)
         self.central=QWidget()
@@ -159,7 +158,7 @@ class VariableManager(Subwindow):
     def __init__(self,parent,variables):
         Subwindow.__init__(self,parent)
         # WithSubwindow.__init__(self)
-        self.setGeometry(400,500,400,300)
+        self.resize(400,300)
         self.setMinimumSize(300,200)
         self.setWindowTitle('变量管理器')
         self.par=parent
@@ -204,6 +203,7 @@ class VariableManager(Subwindow):
             self.varModel.appendRow(QStandardItem(var['id']))
         varmod=VariableModifier(self,variableList=self.variables)
         varmod.show()
+        varmod.setFixedSize(varmod.size())
         varmod.modSignal.connect(addSlot)
         # self.windows.append(varmod)
         # print(self.windows)
@@ -260,7 +260,7 @@ class MainWindow(WithSubwindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("计算器")
-        self.setGeometry(100,100,800,600)
+        self.resize(800,600)
         self.setMinimumSize(400,400)
 
         self.setFont(font1)
@@ -310,7 +310,6 @@ class MainWindow(WithSubwindow):
         self.calc_outputTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.calc_calc=QPushButton('计算/执行')
         self.calc_calc.setFont(font1)
-        self.calc_calc.setFixedWidth(100)
         self.calc_calc.pressed.connect(self.calc)
         # self.calc_output_layout_lFilling=QLabel()
         # self.calc_output_layout_lFilling.setFixedWidth(100)
@@ -378,10 +377,3 @@ class MainWindow(WithSubwindow):
         super().closeEvent(event)
         self.close()
         sys.exit(0)
-        
-            
-app=QApplication(sys.argv)
-
-window=MainWindow()
-window.show()
-sys.exit(app.exec_())
