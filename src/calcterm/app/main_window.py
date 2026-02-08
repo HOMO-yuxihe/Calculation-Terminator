@@ -54,20 +54,10 @@ class OutputWindow(Subwindow):
         self.setMinimumSize(400,200)
         self.par=parent
 
-        self.display=MTextEdit()
-        self.display.setFont(font2)
-        self.display.setText(content)
-        self.display.setReadOnly(1)
-
-        simplifyAction=QAction('化简 (Ctrl+S)')
-        simplifyAction.setShortcut('Ctrl+S')
-        simplifyAction.triggered.connect(self.simplify)
-        evalAction=QAction('求值 (Ctrl+E)')
-        evalAction.setShortcut('Ctrl+E')
-        evalAction.triggered.connect(self.eval)
-        self.closeShortcut=QShortcut(QKeySequence('Escape'),self)
-        self.closeShortcut.activated.connect(self.close)
-        self.display.setMenu([simplifyAction,evalAction])
+        simplifyAction=QAction('化简 (Ctrl+S)',shortcut='Ctrl+S',triggered=self.simplify)
+        evalAction=QAction('求值 (Ctrl+E)',shortcut='Ctrl+E',triggered=self.eval)
+        self.closeShortcut=QShortcut(QKeySequence('Escape'),self,activated=self.close)
+        self.display=MTextEdit([simplifyAction,evalAction],content,font=font2,readOnly=1)
 
         self.setCentralWidget(self.display)
         self.show()
@@ -152,8 +142,8 @@ class VariableModifier(QDialog):
 
 class VariableManager(Subwindow):
     class _ListView(QListView):
-        def __init__(self,parent):
-            super().__init__()
+        def __init__(self,parent,*args,**kw):
+            super().__init__(*args,**kw)
             self.par=parent
         def keyPressEvent(self, event:QKeyEvent):
             if event.key()==Qt.Key_F5:
@@ -177,8 +167,7 @@ class VariableManager(Subwindow):
         self.variables:List[parser.Variable]=variables
         self.varModel=QStandardItemModel()
 
-        self.list=self._ListView(self)
-        self.list.setFont(font2)
+        self.list=self._ListView(self,font=font2)
         self.list.setModel(self.varModel)
         self.list.clicked.connect(self.showInfo)
         self.sidebar=QVBoxLayout()
@@ -265,22 +254,19 @@ class MainWindow(WithSubwindow):
         self.setFont(font1)
         self.windows=[]
 
-        self.menubar=QMenuBar(self)
-        self.menubar.setFont(fontdefault)
+        self.menubar=QMenuBar(self,font=fontdefault)
         self.setMenuBar(self.menubar)
         self.variables=[]
         self.variablemanager=VariableManager(self,self.variables)
         self.windows.append(self.variablemanager)
-        self.varMgmt=QAction('变量管理',self.menubar)
-        self.varMgmt.triggered.connect(self.openVariableManager)
+        self.varMgmt=QAction('变量管理',self.menubar,triggered=self.openVariableManager)
         self.varMgmtopened=0
         self.menubar.addAction(self.varMgmt)
 
         #标签页部分
-        self.Tab=QTabWidget(self)
         self.Tab_font=QFont()
         self.Tab_font.setFamily('Microsoft Yahei'),self.Tab_font.setPointSize(10)
-        self.Tab.setFont(self.Tab_font)
+        self.Tab=QTabWidget(self,font=self.Tab_font)
         self.calcTab=QWidget(self.Tab)
         self.eqalTab=QWidget(self.Tab)
         self.ineqalTab=QWidget(self.Tab)
@@ -294,21 +280,15 @@ class MainWindow(WithSubwindow):
         #基础计算部分
         self.calc_layout=QVBoxLayout()
         self.calcTab.setLayout(self.calc_layout)
-        self.calc_inputTip=QLabel('输入表达式')
-        self.calc_inputTip.setFont(font1)
-        self.calc_inputTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.calc_inputTip=QLabel('输入表达式',font=font1,alignment=Qt.AlignCenter)
+        self.calc_input=QTextEdit(font=font2)
         self.calc_layout.addWidget(self.calc_inputTip)
-        self.calc_input=QTextEdit()
-        self.calc_input.setFont(font2)
         self.calc_layout.addWidget(self.calc_input)
 
         self.calc_output_layout=QHBoxLayout()
         self.calc_layout.addLayout(self.calc_output_layout)
-        self.calc_outputTip=QLabel('计算结果')
-        self.calc_outputTip.setFont(font1)
-        self.calc_outputTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.calc_calc=QPushButton('计算/执行')
-        self.calc_calc.setFont(font1)
+        self.calc_outputTip=QLabel('计算结果',font=font1,alignment=Qt.AlignCenter)
+        self.calc_calc=QPushButton('计算/执行',font=font1)
         self.calc_calc.pressed.connect(self.calc)
         # self.calc_output_layout_lFilling=QLabel()
         # self.calc_output_layout_lFilling.setFixedWidth(100)
@@ -319,18 +299,11 @@ class MainWindow(WithSubwindow):
         #拉格朗日部分
         self.lagrange_layout=QVBoxLayout()
         self.lagrangeTab.setLayout(self.lagrange_layout)
-        self.lagrange_limitsTip=QLabel('约束条件')
-        self.lagrange_limitsTip.setFont(font1)
-        self.lagrange_limitsTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lagrange_limitsInput=MultiLineEdit()
-        self.lagrange_limitsInput.setFont(font2)
-        self.lagrange_targetTip=QLabel('目标函数')
-        self.lagrange_targetTip.setFont(font1)
-        self.lagrange_targetTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lagrange_targetInput=QTextEdit()
-        self.lagrange_targetInput.setFont(font2)
-        self.lagrange_calc=QPushButton('开始计算')
-        self.lagrange_calc.setFont(font1)
+        self.lagrange_limitsTip=QLabel('约束条件',font=font1,alignment=Qt.AlignCenter)
+        self.lagrange_limitsInput=MultiLineEdit(font=font2)
+        self.lagrange_targetTip=QLabel('目标函数',font=font1,alignment=Qt.AlignCenter)
+        self.lagrange_targetInput=QTextEdit(font=font2)
+        self.lagrange_calc=QPushButton('开始计算',font=font1)
         self.lagrange_calc.pressed.connect(self.lagrange)
 
         
