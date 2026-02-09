@@ -1,13 +1,20 @@
 from keyword import iskeyword
 import sys,time
-from PyQt5.QtWidgets import (
-    QApplication,QLabel,QMainWindow,QTabWidget,
-    QWidget,QVBoxLayout,QHBoxLayout,QTextEdit,
-    QPushButton,QAction,QScrollArea,QLineEdit,
-    QShortcut,QInputDialog,QListView,QMenuBar,
-    QMenu,QMessageBox,QDialog)
-from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
-from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
+from PyQt5.QtWidgets import (QMainWindow,
+    QApplication,QWidget,QVBoxLayout,QHBoxLayout,
+    QLabel,QTextEdit,QPushButton,QMenuBar,QAction,
+    QDialog,QLineEdit,QMessageBox,QListView,QShortcut,
+    QInputDialog
+)
+from PyQt5.QtCore import Qt,QModelIndex,QTimer
+from PyQt5.QtGui import (
+    QFont,QKeyEvent,QStandardItemModel,QStandardItem,
+    QKeySequence
+)
+from qfluentwidgets import (
+    FluentWindow,NavigationItemPosition,
+    Theme,PushButton,FluentIcon  # 替换原生QPushButton为Fluent风格
+)
 import calcterm.core.calc as parser
 from calcterm.widgets.common import MTextEdit,MultiLineEdit
 from typing import List,Dict,Union
@@ -16,23 +23,20 @@ from keyword import iskeyword
 import sys
 from typing import List,Dict,Union
 
-font1=QFont()
-font1.setFamily('Microsoft Yahei'),font1.setPointSize(12)
-font2=QFont()
-font2.setFamily('Consolas'),font2.setPointSize(18)
-fontdefault=QFont()
-fontdefault.setFamily('Microsoft Yahei'),fontdefault.setPointSize(9)
+font1=QFont("Segoe UI",12)
+fontdefault=QFont("Segoe UI",10)
+font2=QFont("Consolas",14)
 
 class Subwindow(QMainWindow):
     def __init__(self,parent):
         super().__init__()
         self.par=parent
     
-    def closeEvent(self, event):
+    def closeEvent(self,event):
         self.par.closeSubwindow(self)
         return super().closeEvent(event)
 
-class WithSubwindow(QMainWindow):
+class WithSubwindow(FluentWindow):
     def __init__(self):
         super().__init__()
         self.windows=[]
@@ -41,7 +45,7 @@ class WithSubwindow(QMainWindow):
         self.windows.remove(target)
         target.close()
     
-    def closeEvent(self, event):
+    def closeEvent(self,event):
         for i in self.windows.copy():
             i.close()
         return super().closeEvent(event)
@@ -54,11 +58,6 @@ class OutputWindow(Subwindow):
         self.setMinimumSize(400,200)
         self.par=parent
 
-        self.display=MTextEdit()
-        self.display.setFont(font2)
-        self.display.setText(content)
-        self.display.setReadOnly(1)
-
         simplifyAction=QAction('化简 (Ctrl+S)')
         simplifyAction.setShortcut('Ctrl+S')
         simplifyAction.triggered.connect(self.simplify)
@@ -67,12 +66,13 @@ class OutputWindow(Subwindow):
         evalAction.triggered.connect(self.eval)
         self.closeShortcut=QShortcut(QKeySequence('Escape'),self)
         self.closeShortcut.activated.connect(self.close)
-        self.display.setMenu([simplifyAction,evalAction])
+        self.display=MTextEdit([simplifyAction,evalAction],content,font=font2)
+        self.display.setReadOnly(1)
 
         self.setCentralWidget(self.display)
         self.show()
     
-    # def keyPressEvent(self, event):
+    # def keyPressEvent(self,event):
     #     if event.key()==Qt.Key.Key_Escape:
     #         self.closeEvent(None)
     
@@ -87,6 +87,7 @@ class OutputWindow(Subwindow):
         if ok:
             result=parser.parse_expr(f'simplify({content})')
             self.display.setPlainText(str(result.evalf(digit)))
+
 
 class VariableModifier(QDialog):
 
@@ -137,7 +138,7 @@ class VariableModifier(QDialog):
         if not self.id.text().strip().isidentifier():
             QMessageBox.warning(self,'错误','标识符不符合命名格式')
             return
-        if self.id.text() in self.varIds and self.id.text() != self.srcid:
+        if self.id.text() in self.varIds and self.id.text() !=self.srcid:
             QMessageBox.warning(self,'错误','标识符已存在')
             return
         self.res={'id':self.id.text(),'name':self.name.text(),'assumptions':{}}
@@ -149,13 +150,13 @@ class VariableModifier(QDialog):
         result=dialog.exec_()
         return dialog.res,(result==QDialog.Accepted)
 
-
+# 变量管理窗口（简化实现，保留原有逻辑）
 class VariableManager(Subwindow):
     class _ListView(QListView):
         def __init__(self,parent):
             super().__init__()
             self.par=parent
-        def keyPressEvent(self, event:QKeyEvent):
+        def keyPressEvent(self,event:QKeyEvent):
             if event.key()==Qt.Key_F5:
                 self.par.refresh()
                 event.ignore()
@@ -253,114 +254,180 @@ class VariableManager(Subwindow):
         var=self.variables[row]
         self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")
     
-
-
-class MainWindow(WithSubwindow):
-    def __init__(self):
+#==========核心：拆分原Tab为独立的子界面==========
+# 1. 代数/数值计算子界面（对应原calcTab）
+class CalcInterface(QWidget):
+    def __init__(self,parent=None):
         super().__init__()
-        self.setWindowTitle("计算器")
-        self.resize(800,600)
-        self.setMinimumSize(400,400)
+        self.par=parent
+        self.init_ui()
 
+    def init_ui(self):
         self.setFont(font1)
-        self.windows=[]
-
-        self.menubar=QMenuBar(self)
-        self.menubar.setFont(fontdefault)
-        self.setMenuBar(self.menubar)
-        self.variables=[]
-        self.variablemanager=VariableManager(self,self.variables)
-        self.windows.append(self.variablemanager)
-        self.varMgmt=QAction('变量管理',self.menubar)
-        self.varMgmt.triggered.connect(self.openVariableManager)
-        self.varMgmtopened=0
-        self.menubar.addAction(self.varMgmt)
-
-        #标签页部分
-        self.Tab=QTabWidget(self)
-        self.Tab_font=QFont()
-        self.Tab_font.setFamily('Microsoft Yahei'),self.Tab_font.setPointSize(10)
-        self.Tab.setFont(self.Tab_font)
-        self.calcTab=QWidget(self.Tab)
-        self.eqalTab=QWidget(self.Tab)
-        self.ineqalTab=QWidget(self.Tab)
-        self.lagrangeTab=QWidget(self.Tab)
-        self.Tab.addTab(self.calcTab,'代数/数值计算')
-        self.Tab.addTab(self.eqalTab,'方程求解')
-        self.Tab.addTab(self.ineqalTab,'不等式求解')
-        self.Tab.addTab(self.lagrangeTab,'拉格朗日乘数')
-        self.setCentralWidget(self.Tab)
-
-        #基础计算部分
-        self.calc_layout=QVBoxLayout()
-        self.calcTab.setLayout(self.calc_layout)
+        self.layout_=QVBoxLayout(self)
+        
+        # 输入部分
         self.calc_inputTip=QLabel('输入表达式')
         self.calc_inputTip.setFont(font1)
         self.calc_inputTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.calc_layout.addWidget(self.calc_inputTip)
+        self.layout_.addWidget(self.calc_inputTip)
+        
         self.calc_input=QTextEdit()
         self.calc_input.setFont(font2)
-        self.calc_layout.addWidget(self.calc_input)
-
-        self.calc_output_layout=QHBoxLayout()
-        self.calc_layout.addLayout(self.calc_output_layout)
-        self.calc_outputTip=QLabel('计算结果')
-        self.calc_outputTip.setFont(font1)
-        self.calc_outputTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.calc_calc=QPushButton('计算/执行')
-        self.calc_calc.setFont(font1)
-        self.calc_calc.pressed.connect(self.calc)
-        # self.calc_output_layout_lFilling=QLabel()
-        # self.calc_output_layout_lFilling.setFixedWidth(100)
-        # self.calc_output_layout.addWidget(self.calc_output_layout_lFilling)
-        # self.calc_output_layout.addWidget(self.calc_outputTip)
-        self.calc_output_layout.addWidget(self.calc_calc)
-
-        #拉格朗日部分
-        self.lagrange_layout=QVBoxLayout()
-        self.lagrangeTab.setLayout(self.lagrange_layout)
-        self.lagrange_limitsTip=QLabel('约束条件')
-        self.lagrange_limitsTip.setFont(font1)
-        self.lagrange_limitsTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lagrange_limitsInput=MultiLineEdit()
-        self.lagrange_limitsInput.setFont(font2)
-        self.lagrange_targetTip=QLabel('目标函数')
-        self.lagrange_targetTip.setFont(font1)
-        self.lagrange_targetTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lagrange_targetInput=QTextEdit()
-        self.lagrange_targetInput.setFont(font2)
-        self.lagrange_calc=QPushButton('开始计算')
-        self.lagrange_calc.setFont(font1)
-        self.lagrange_calc.pressed.connect(self.lagrange)
+        self.layout_.addWidget(self.calc_input)
 
         
-        self.lagrange_layout.addWidget(self.lagrange_limitsTip)
-        self.lagrange_layout.addWidget(self.lagrange_limitsInput,stretch=1)
-        self.lagrange_layout.addWidget(self.lagrange_targetTip)
-        self.lagrange_layout.addWidget(self.lagrange_targetInput,stretch=1)
-        self.lagrange_layout.addWidget(self.lagrange_calc)
+        # 替换为Fluent风格按钮
+        self.calc_calc=PushButton('计算/执行')
+        self.calc_calc.setFont(font1)
+        # 保留原有点击逻辑（需自行实现calc方法）
+        self.calc_calc.pressed.connect(self.calc)
+        
+        self.layout_.addWidget(self.calc_calc)
+        self.setObjectName('Calculator')
 
     def calc(self):
         expr=self.calc_input.toPlainText()
-        result=parser.calc(expr,self.variables)
-        self.windows.append(OutputWindow(self,result))
+        result=parser.calc(expr,self.par.variables)
+        self.par.windows.append(OutputWindow(self.par,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
-        print(self.windows)
-        print(self.variables)
+        print(self.par.windows)
+        print(self.par.variables)
 
-        # sys.exit(0)
+
+# 2. 方程求解子界面（对应原eqalTab，简化占位）
+class EqalInterface(QWidget):
+    def __init__(self,parent=None):
+        super().__init__()
+        layout=QVBoxLayout(self)
+        layout.addWidget(QLabel("方程求解面板",alignment=Qt.AlignCenter))
+        layout.addWidget(QTextEdit("输入方程...",font=font2))
+        layout.addWidget(PushButton("求解方程"))
+        self.setObjectName('Eqalities Solver')
+
+# 3. 不等式求解子界面（对应原ineqalTab，简化占位）
+class InequalInterface(QWidget):
+    def __init__(self,parent=None):
+        super().__init__()
+        layout=QVBoxLayout(self)
+        layout.addWidget(QLabel("不等式求解面板",alignment=Qt.AlignCenter))
+        layout.addWidget(QTextEdit("输入不等式...",font=font2))
+        layout.addWidget(PushButton("求解不等式"))
+        self.setObjectName('Inqalities Solver')
+
+# 4. 拉格朗日乘数子界面（对应原lagrangeTab）
+class LagrangeInterface(QWidget):
+    def __init__(self,parent=None):
+        super().__init__()
+        self.par=parent
+        self.init_ui()
+
+    def init_ui(self):
+        self.setFont(font1)
+        layout=QVBoxLayout(self)
+        
+        self.lagrange_limitsTip=QLabel('约束条件')
+        self.lagrange_limitsTip.setFont(font1)
+        self.lagrange_limitsTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.lagrange_limitsTip)
+        
+        self.lagrange_limitsInput=MultiLineEdit()
+        self.lagrange_limitsInput.setFont(font2)
+        layout.addWidget(self.lagrange_limitsInput,stretch=1)
+        
+        self.lagrange_targetTip=QLabel('目标函数')
+        self.lagrange_targetTip.setFont(font1)
+        self.lagrange_targetTip.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.lagrange_targetTip)
+        
+        self.lagrange_targetInput=QTextEdit()
+        self.lagrange_targetInput.setFont(font2)
+        layout.addWidget(self.lagrange_targetInput,stretch=1)
+        
+        # 替换为Fluent风格按钮
+        self.lagrange_calc=PushButton('开始计算')
+        self.lagrange_calc.setFont(font1)
+        # 保留原有点击逻辑（需自行实现lagrange方法）
+        self.lagrange_calc.pressed.connect(self.lagrange)
+        layout.addWidget(self.lagrange_calc)
+        self.setObjectName('Lagrange Solver')
     
     def lagrange(self):
+        self.lagrange_calc.setDisabled(1)
+        QTimer.singleShot(100,lambda:self.lagrange_calc.setDisabled(0))
         limits=[i.text().strip() for i in self.lagrange_limitsInput.lines if i.text().strip()]
         target=self.lagrange_targetInput.toPlainText()
-        res=parser.lagrange(limits,target,self.variables)
+        res=parser.lagrange(limits,target,self.par.variables)
         if isinstance(res,str):
-            self.windows.append(OutputWindow(self,res))
+            self.par.windows.append(OutputWindow(self.par,res))
         else:
-            self.windows.append(OutputWindow(self,'\n'.join(map(str,res))))
-        
-    
+            self.par.windows.append(OutputWindow(self.par,'\n'.join(map(str,res))))
+
+
+#==========主窗口：FluentWindow + 侧边栏==========
+class MainWindow(WithSubwindow):
+    def __init__(self):
+        super().__init__()
+        # 基础窗口设置
+        self.setWindowTitle("计算器")
+        self.resize(800,600)
+        self.setMinimumSize(400,400)
+        # (Theme.LIGHT)  # 设置WinUI 3浅色主题
+        self.setFont(font1)
+
+        # 菜单栏（保留原有逻辑）
+        # self.menubar=QMenuBar(self)
+        # self.menubar.setFont(fontdefault)
+        # self.setMenuBar(self.menubar)
+        self.variables=[]
+        self.variablemanager=VariableManager(self,self.variables)
+        self.windows=[self.variablemanager]
+        self.varMgmt=QShortcut(QKeySequence(Qt.Key_F3),self)
+        self.varMgmt.activated.connect(self.openVariableManager)
+        self.varMgmtopened=0
+        # self.menubar.addAction(self.varMgmt)
+
+        # 核心：添加侧边导航项（替代原QTabWidget）
+        self.init_navigation()
+
+    def init_navigation(self):
+        # 1. 代数/数值计算（顶部导航）
+        self.calc_interface=CalcInterface(self)
+        self.addSubInterface(
+            self.calc_interface,
+            FluentIcon.CODE,
+            "代数/数值计算",
+            NavigationItemPosition.TOP
+        )
+
+        # 2. 方程求解
+        self.eqal_interface=EqalInterface(self)
+        self.addSubInterface(
+            self.eqal_interface,
+            FluentIcon.EDIT,
+            "方程求解",
+            NavigationItemPosition.TOP
+        )
+
+        # 3. 不等式求解
+        self.inequal_interface=InequalInterface(self)
+        self.addSubInterface(
+            self.inequal_interface,
+            FluentIcon.PAGE_LEFT,
+            "不等式求解",
+            NavigationItemPosition.TOP
+        )
+
+        # 4. 拉格朗日乘数
+        self.lagrange_interface=LagrangeInterface(self)
+        self.addSubInterface(
+            self.lagrange_interface,
+            FluentIcon.DEVELOPER_TOOLS,
+            "拉格朗日乘数",
+            NavigationItemPosition.TOP
+        )
+
     def openVariableManager(self):
         if self.variablemanager in self.windows:
             self.variablemanager.show()
@@ -371,15 +438,10 @@ class MainWindow(WithSubwindow):
             self.variablemanager=VariableManager(self,self.variables)
             self.variablemanager.show()
             self.windows.append(self.variablemanager)
-    
-    def closeEvent(self, event):
-        super().closeEvent(event)
-        self.close()
-        sys.exit(0)
 
-if __name__ == '__main__':
+if __name__=="__main__":
     app=QApplication(sys.argv)
-
+    app.setStyle("Fusion")  # 兼容Fluent样式
     window=MainWindow()
     window.show()
     sys.exit(app.exec_())

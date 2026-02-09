@@ -5,9 +5,9 @@ from PyQt5.QtGui import QKeySequence,QKeyEvent
 from PyQt5.QtCore import Qt,QTimer,QEvent
 
 class MTextEdit(QTextEdit):
-    def __init__(self,**kw):
-        super().__init__(**kw)
-        self.menu=[]
+    def __init__(self,menus=[],*args,**kw):
+        super().__init__(*args,**kw)
+        self.menu=menus
     
     def setMenu(self,menus:list[QAction]=[]):
         self.menu=menus
@@ -20,8 +20,8 @@ class MTextEdit(QTextEdit):
 
 class MultiLineEdit(QWidget):
     class _LineEdit(QLineEdit):
-        def __init__(self,parent,canBeDeleted=True,**kw):
-            super().__init__(**kw)
+        def __init__(self,parent,canBeDeleted=True,*args,**kw):
+            super().__init__(*args,**kw)
             self.par=parent
             self.canBeDeleted=canBeDeleted
         
@@ -51,11 +51,9 @@ class MultiLineEdit(QWidget):
     def __init__(self,**kw):
         super().__init__(**kw)
         self.main_layout = QVBoxLayout(self)
-        self.scroll_area = QScrollArea(self)
-        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area = QScrollArea(self,widgetResizable=1)
         self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setSpacing(8)
+        self.content_layout = QVBoxLayout(self.content_widget,spacing=8)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.lines = [self._LineEdit(self,False)]
         self.lines[0].returnPressed.connect(lambda: self.add(self.lines[0]))
@@ -65,9 +63,8 @@ class MultiLineEdit(QWidget):
 
     def add(self,obj:QWidget):
         item = self._LineEdit(self)
-        shortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace), item)
-        shortcut.setContext(Qt.WidgetShortcut)
-        shortcut.activated.connect(lambda: self.delete(item))
+        shortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace),item,
+                             context=Qt.WidgetShortcut,activated=lambda:self.delete(item))
         index = self.content_layout.indexOf(obj) + 1
         self.lines.insert(index, item)
         self.content_layout.insertWidget(index, item)
