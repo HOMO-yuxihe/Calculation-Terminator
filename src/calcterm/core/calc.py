@@ -153,16 +153,15 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
     lm_exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
     tg_expr=parse_expr(tg,global_dict=glob,local_dict=local)
 
-    if list(tracer.symbols):
-        ERR_result=[]
-        symbols=sorted(list(tracer.symbols))
-        functions=sorted(list(tracer.functions))
-        if symbols:
-            ERR_result.append(f'未定义变量:{",".join(symbols)}')
-        if functions:
-            ERR_result.append(f'未知函数:{",".join(functions)}')
-        if ERR_result:
-            return '错误：'+'; '.join(ERR_result)
+    ERR_result=[]
+    symbols=sorted(list(tracer.symbols))
+    functions=sorted(list(tracer.functions))
+    if symbols:
+        ERR_result.append(f'未定义变量:{",".join(symbols)}')
+    if functions:
+        ERR_result.append(f'未知函数:{",".join(functions)}')
+    if ERR_result:
+        return '错误：'+'; '.join(ERR_result)
 
     Lag=tg_expr
     for i,lamda in enumerate(lambdas):

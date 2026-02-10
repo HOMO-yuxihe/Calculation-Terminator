@@ -1,5 +1,6 @@
-from keyword import iskeyword
 import sys,time
+sys.path.append('src')
+from keyword import iskeyword
 from PyQt5.QtWidgets import (
     QApplication,QLabel,QMainWindow,QTabWidget,
     QWidget,QVBoxLayout,QHBoxLayout,QTextEdit,
@@ -10,10 +11,6 @@ from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKey
 from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
 from calcterm.widgets.common import MTextEdit,MultiLineEdit
-from typing import List,Dict,Union
-
-from keyword import iskeyword
-import sys
 from typing import List,Dict,Union
 
 font1=QFont()
@@ -315,6 +312,9 @@ class MainWindow(WithSubwindow):
 
     def calc(self):
         expr=self.calc_input.toPlainText()
+        if not expr.strip():
+            QMessageBox.warning(self,'错误','表达式不能为空')
+            return
         result=parser.calc(expr,self.variables)
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
@@ -327,6 +327,9 @@ class MainWindow(WithSubwindow):
     def lagrange(self):
         limits=[i.text().strip() for i in self.lagrange_limitsInput.lines if i.text().strip()]
         target=self.lagrange_targetInput.toPlainText()
+        if not target.strip():
+            QMessageBox.warning(self,'错误','目标函数不能为空')
+            return
         res=parser.lagrange(limits,target,self.variables)
         if isinstance(res,str):
             self.windows.append(OutputWindow(self,res))
