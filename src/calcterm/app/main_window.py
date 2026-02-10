@@ -1,5 +1,6 @@
-from keyword import iskeyword
 import sys,time
+sys.path.append('src')
+from keyword import iskeyword
 from PyQt5.QtWidgets import (QMainWindow,
     QApplication,QWidget,QVBoxLayout,QHBoxLayout,
     QLabel,QTextEdit,QPushButton,QMenuBar,QAction,
