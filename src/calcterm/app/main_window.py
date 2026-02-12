@@ -293,6 +293,16 @@ class MainWindow(WithSubwindow):
         # self.calc_output_layout.addWidget(self.calc_outputTip)
         self.calc_output_layout.addWidget(self.calc_calc)
 
+        #方程求解部分
+        self.eqal_layout=QVBoxLayout()
+        self.eqalTab.setLayout(self.eqal_layout)
+        self.eqal_inputTip=QLabel('输入方程',font=font1,alignment=Qt.AlignCenter)
+        self.eqal_input=MultiLineEdit(font=font2)
+        self.eqal_calc=QPushButton('求解',font=font1)
+        self.eqal_layout.addWidget(self.eqal_inputTip)
+        self.eqal_layout.addWidget(self.eqal_input)
+        self.eqal_layout.addWidget(self.eqal_calc)
+
         #拉格朗日部分
         self.lagrange_layout=QVBoxLayout()
         self.lagrangeTab.setLayout(self.lagrange_layout)
@@ -303,7 +313,6 @@ class MainWindow(WithSubwindow):
         self.lagrange_calc=QPushButton('开始计算',font=font1)
         self.lagrange_calc.pressed.connect(self.lagrange)
 
-        
         self.lagrange_layout.addWidget(self.lagrange_limitsTip)
         self.lagrange_layout.addWidget(self.lagrange_limitsInput,stretch=1)
         self.lagrange_layout.addWidget(self.lagrange_targetTip)

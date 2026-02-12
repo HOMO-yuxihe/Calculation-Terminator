@@ -178,10 +178,38 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
         i['result']=res
     return solves
 
+def solver(expr:List[str],tg:List[str],vars:List[Variable]):
+    tracer=SymbolTracer()
+    local=localDictGen(vars)
+    local['Symbol']=tracer.Symbol
+    local['Function']=tracer.Function
+
+    exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    target=[local[i] for i in tg]
+
+    ERR_result=[]
+    symbols=sorted(list(tracer.symbols))
+    functions=sorted(list(tracer.functions))
+    if symbols:
+        ERR_result.append(f'未定义变量:{",".join(symbols)}')
+    if functions:
+        ERR_result.append(f'未知函数:{",".join(functions)}')
+    if ERR_result:
+        return '错误：'+'; '.join(ERR_result)
+    
+    result=sympy.solve(exprs,*target,dict=True)
+    return result
+
 if __name__ == '__main__':
     # x,y=sympy.symbols('x y',real=1,positive=(1,1))
     # lagrange([4*x+y+x*y-5],16*x**2+y**2,{x:'x',y:'y'})
-    lagrange(['4*x+y+x*y-5'],'16*x**2+y**2',
-             [{'id':'x','name':'x','assumptions':{'real':True}},
-              {'id':'y','name':'y','assumptions':{'real':True}}])
+    # lagrange(['4*x+y+x*y-5'],'16*x**2+y**2',
+    #          [{'id':'x','name':'x','assumptions':{'real':True}},
+    #           {'id':'y','name':'y','assumptions':{'real':True}}])
     # print(parse2('abc'))
+    # print(solver(['x+y-6','x*y-5'],['x','y'],
+    #              [{'id':'x','name':'x','assumptions':{'real':True}},
+    #               {'id':'y','name':'y','assumptions':{'real':True}}]))
+    # print(solver(['(x-5)*(x-2.5)'],['x'],
+    #              [{'id':'x','name':'x','assumptions':{'integer':True}}]))
+    pass
