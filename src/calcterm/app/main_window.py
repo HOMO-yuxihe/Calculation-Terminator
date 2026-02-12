@@ -190,27 +190,24 @@ class VariableManager(Subwindow):
         self.refresh()
     
     def addOpen(self):
-        var,ok=VariableModifier.get(self,variableList=self.variables)
-        if ok:
-            self.variables.append(var)
-            self.varModel.appendRow(QStandardItem(var['id']))
+        if (res:=VariableModifier.get(self,variableList=self.variables))[1]:
+            self.variables.append(res[0])
+            self.varModel.appendRow(QStandardItem(res[0]['id']))
     
     def editOpen(self):
         model=self.list.selectionModel()
-        indexes=model.selectedIndexes()
-        if indexes:
-            mod,ok=VariableModifier.get(self,self.variables[indexes[0].row()],self.variables)
-            if ok:
-                self.variables[indexes[0].row()]=mod
-                self.varModel.setData(indexes[0],mod['id'])
+        if indexes:=model.selectedIndexes():
+            
+            if (res:=VariableModifier.get(self,self.variables[indexes[0].row()],self.variables))[1]:
+                self.variables[indexes[0].row()]=res[0]
+                self.varModel.setData(indexes[0],res[0]['id'])
                 self.showInfo()
         else:
             QMessageBox.warning(self,'错误','请选中一个变量')
 
     def remove(self):
         model=self.list.selectionModel()
-        indexes=model.selectedIndexes()
-        if indexes:
+        if indexes:=model.selectedIndexes():
             index=indexes[0].row()
             self.varModel.removeRow(index)
             self.variables.pop(index)
@@ -228,8 +225,7 @@ class VariableManager(Subwindow):
     
     def showInfo(self,index:QModelIndex=None):
         if index==None:
-            indexes=self.list.selectionModel().selectedIndexes()
-            if indexes:
+            if indexes:=self.list.selectionModel().selectedIndexes():
                 row=indexes[0].row()
             else:
                 self.info.clear()
@@ -325,13 +321,12 @@ class MainWindow(WithSubwindow):
         # sys.exit(0)
     
     def lagrange(self):
-        limits=[i.text().strip() for i in self.lagrange_limitsInput.lines if i.text().strip()]
+        limits=[j for i in self.lagrange_limitsInput.lines if (j:=i.text().strip())]
         target=self.lagrange_targetInput.toPlainText()
         if not target.strip():
             QMessageBox.warning(self,'错误','目标函数不能为空')
             return
-        res=parser.lagrange(limits,target,self.variables)
-        if isinstance(res,str):
+        if isinstance(res:=parser.lagrange(limits,target,self.variables),str):
             self.windows.append(OutputWindow(self,res))
         else:
             self.windows.append(OutputWindow(self,'\n'.join(map(str,res))))

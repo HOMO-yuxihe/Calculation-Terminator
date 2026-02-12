@@ -125,12 +125,10 @@ def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
 
     try:
         result=parse_expr(exp,local_dict=local,global_dict=glob)
-        symbols=sorted(list(tracer.symbols))
-        functions=sorted(list(tracer.functions))
         ERR_result=[]
-        if symbols:
+        if symbols:=sorted(list(tracer.symbols)):
             ERR_result.append(f'未定义变量:{",".join(symbols)}')
-        if functions:
+        if functions:=sorted(list(tracer.functions)):
             ERR_result.append(f'未知函数:{",".join(functions)}')
         if ERR_result:
             return '错误：'+'; '.join(ERR_result)
@@ -154,11 +152,9 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
     tg_expr=parse_expr(tg,global_dict=glob,local_dict=local)
 
     ERR_result=[]
-    symbols=sorted(list(tracer.symbols))
-    functions=sorted(list(tracer.functions))
-    if symbols:
+    if symbols:=sorted(list(tracer.symbols)):
         ERR_result.append(f'未定义变量:{",".join(symbols)}')
-    if functions:
+    if functions:=sorted(list(tracer.functions)):
         ERR_result.append(f'未知函数:{",".join(functions)}')
     if ERR_result:
         return '错误：'+'; '.join(ERR_result)
