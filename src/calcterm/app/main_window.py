@@ -70,10 +70,8 @@ class OutputWindow(Subwindow):
     
     def eval(self):
         content=self.display.toPlainText()
-        digit,ok=QInputDialog.getInt(self,'有效数字位数','高精度计算',15)
-        if ok:
-            result=parser.parse_expr(f'simplify({content})')
-            self.display.setPlainText(str(result.evalf(digit)))
+        if (res:=QInputDialog.getInt(self,'有效数字位数','高精度计算',15))[1]:
+            self.display.setPlainText(parser.evalf(content,res[0]))
 
 class VariableModifier(QDialog):
 
@@ -127,7 +125,7 @@ class VariableModifier(QDialog):
         if self.id.text() in self.varIds and self.id.text() != self.srcid:
             QMessageBox.warning(self,'错误','标识符已存在')
             return
-        self.res={'id':self.id.text(),'name':self.name.text(),'assumptions':{}}
+        self.res:parser.Variable={'id':self.id.text(),'name':self.name.text(),'assumptions':{}}
         self.accept()
     
     @staticmethod

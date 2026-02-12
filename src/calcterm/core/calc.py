@@ -87,6 +87,10 @@ def localDictGen(vars:List[Variable]):
         local[i['id']]=sympy.Symbol(i['name'],**i['assumptions'])
     return local
 
+def evalf(exp:str,digit:int):
+    result=sympy.parse_expr(f'simplify({exp})')
+    return str(result.evalf(digit))
+
 def parse(exp:str,vars:Dict[str,str]={}):
     '''
     parse:Parse and evaluate expressions written in string.
