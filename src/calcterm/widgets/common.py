@@ -1,4 +1,5 @@
 import sys
+from typing import List
 from PyQt5.QtWidgets import (QTextEdit,QAction,QLineEdit,QWidget,
                              QScrollArea,QVBoxLayout,QShortcut)
 from PyQt5.QtGui import QKeySequence,QKeyEvent
@@ -9,7 +10,7 @@ class MTextEdit(QTextEdit):
         super().__init__(*args,**kw)
         self.menu=menus
     
-    def setMenu(self,menus:list[QAction]=[]):
+    def setMenu(self,menus:List[QAction]=[]):
         self.menu=menus
     
     def contextMenuEvent(self, event):

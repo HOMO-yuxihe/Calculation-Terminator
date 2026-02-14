@@ -177,14 +177,13 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
         i['result']=res
     return solves
 
-def solver(expr:List[str],tg:List[str],vars:List[Variable]):
+def solver(expr:List[str],vars:List[Variable]):
     tracer=SymbolTracer()
     local=localDictGen(vars)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
     exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
-    target=[local[i] for i in tg]
 
     ERR_result=[]
     symbols=sorted(list(tracer.symbols))
@@ -195,9 +194,14 @@ def solver(expr:List[str],tg:List[str],vars:List[Variable]):
         ERR_result.append(f'未知函数:{",".join(functions)}')
     if ERR_result:
         return '错误：'+'; '.join(ERR_result)
-    
+
+    symbols=list(set(j for i in exprs for j in i.free_symbols))
+    symbols.sort()
+    tg=yield symbols
+    target=[local[i] for i in tg]
+
     result=sympy.solve(exprs,*target,dict=True)
-    return result
+    yield result
 
 if __name__ == '__main__':
     # x,y=sympy.symbols('x y',real=1,positive=(1,1))
@@ -209,6 +213,9 @@ if __name__ == '__main__':
     # print(solver(['x+y-6','x*y-5'],['x','y'],
     #              [{'id':'x','name':'x','assumptions':{'real':True}},
     #               {'id':'y','name':'y','assumptions':{'real':True}}]))
-    # print(solver(['(x-5)*(x-2.5)'],['x'],
-    #              [{'id':'x','name':'x','assumptions':{'integer':True}}]))
+    # solve=solver(['(x-5)*(x-2.5)'],
+    #              [{'id':'x','name':'x','assumptions':{'integer':True}},
+    #               {'id':'y','name':'y','assumptions':{'integer':True}}])
+    # print(solve.__next__())
+    # print(solve.send(['x']))
     pass
