@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
 from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
-from calcterm.widgets.common import MTextEdit,MultiLineEdit
+from calcterm.widgets.common import MTextEdit,MultiLineEdit,MultiLineSelector
 from typing import List,Dict,Union
 
 font1=QFont()
@@ -233,7 +233,37 @@ class VariableManager(Subwindow):
         var=self.variables[row]
         self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")
     
+class VariableSelector(QDialog):
+    def __init__(self,parent,vars:List[str]):
+        super().__init__(parent=parent)
+        self.setWindowTitle('选择求解的变量')
+        self.setFont(font1)
+        self.mainLayout=QVBoxLayout()
+        self.setLayout(self.mainLayout)
 
+        self.variableList=MultiLineSelector(vars)
+        self.mainLayout.addWidget(self.variableList)
+
+        self.exitLayout=QHBoxLayout()
+        self.confirmBtn=QPushButton('确定')
+        self.confirmBtn.clicked.connect(self.confirm)
+        self.cancelBtn=QPushButton('取消')
+        self.cancelBtn.clicked.connect(self.reject)
+        self.exitLayout.addWidget(self.confirmBtn)
+        self.exitLayout.addWidget(self.cancelBtn)
+        self.mainLayout.addLayout(self.exitLayout)
+        self.res=[False]*len(vars)
+        self.null=self.res
+    
+    def confirm(self):
+        self.res=[i.checkState()==Qt.Checked for i in self.variableList.lines]
+        self.accept()
+
+    @staticmethod
+    def get(parent,vars:List[str]):
+        dialog=VariableSelector(parent,vars)
+        result=dialog.exec_()
+        return dialog.res,((result==QDialog.Accepted) if dialog.res!=dialog.null else False)
 
 class MainWindow(WithSubwindow):
     def __init__(self):
@@ -293,6 +323,7 @@ class MainWindow(WithSubwindow):
         self.eqal_inputTip=QLabel('输入方程',font=font1,alignment=Qt.AlignCenter)
         self.eqal_input=MultiLineEdit(font=font2)
         self.eqal_calc=QPushButton('求解',font=font1)
+        self.eqal_calc.clicked.connect(self.solve)
         self.eqal_layout.addWidget(self.eqal_inputTip)
         self.eqal_layout.addWidget(self.eqal_input)
         self.eqal_layout.addWidget(self.eqal_calc)
@@ -327,6 +358,24 @@ class MainWindow(WithSubwindow):
 
         # sys.exit(0)
     
+    def solve(self):
+        exprs=[j for i in self.eqal_input.lines if (j:=i.text().strip())]
+        if not exprs:
+            QMessageBox.warning(self,'错误','方程组不能为空')
+            return
+        solver=parser.solver(exprs,self.variables)
+        try:
+            usedVariables=solver.__next__()
+        except StopIteration as e:
+            QMessageBox.warning(self,'错误',str(e))
+            return
+        target,ok=VariableSelector.get(self,usedVariables)
+        if not ok:return
+        print(target)
+        res=solver.send(target)
+        self.windows.append(OutputWindow(self,str(res)))
+        
+
     def lagrange(self):
         limits=[j for i in self.lagrange_limitsInput.lines if (j:=i.text().strip())]
         target=self.lagrange_targetInput.toPlainText()

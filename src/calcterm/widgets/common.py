@@ -1,9 +1,11 @@
 import sys
 from typing import List
 from PyQt5.QtWidgets import (QTextEdit,QAction,QLineEdit,QWidget,
-                             QScrollArea,QVBoxLayout,QShortcut)
+                             QScrollArea,QVBoxLayout,QShortcut,
+                             QCheckBox)
 from PyQt5.QtGui import QKeySequence,QKeyEvent
 from PyQt5.QtCore import Qt,QTimer,QEvent
+from sympy import var
 
 class MTextEdit(QTextEdit):
     def __init__(self,menus=[],*args,**kw):
@@ -98,3 +100,24 @@ class MultiLineEdit(QWidget):
         if index<len(self.lines)-1:
             self.lines[index+1].setFocus()
             self.lines[index+1].setCursorPosition(len(self.lines[index+1].text()))
+
+class MultiLineSelector(QWidget):
+    def __init__(self,vars:List[str],*args,**kw):
+        super().__init__(*args,**kw)
+        self.main_layout=QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.scroll_area=QScrollArea(widgetResizable=1)
+        self.content_widget=QWidget()
+        self.content_layout=QVBoxLayout(spacing=8)
+        self.content_layout.setAlignment(Qt.AlignTop)
+        self.variables=vars
+        self.lines=[]
+        for i in vars:
+            checkBox=QCheckBox(i)
+            checkBox.setCheckState(Qt.Checked)
+            self.content_layout.addWidget(checkBox)
+            self.lines.append(checkBox)
+        self.content_widget.setLayout(self.content_layout)
+        self.scroll_area.setWidget(self.content_widget)        
+        self.main_layout.addWidget(self.scroll_area)
+    
