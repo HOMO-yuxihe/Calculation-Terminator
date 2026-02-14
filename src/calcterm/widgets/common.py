@@ -48,8 +48,8 @@ class MultiLineEdit(QWidget):
                 else:return super().keyPressEvent(event)
             else:
                 return super().keyPressEvent(event)
-    def __init__(self,**kw):
-        super().__init__(**kw)
+    def __init__(self,*args,**kw):
+        super().__init__(*args,**kw)
         self.main_layout = QVBoxLayout(self)
         self.scroll_area = QScrollArea(self,widgetResizable=1)
         self.content_widget = QWidget()
