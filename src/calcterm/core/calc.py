@@ -193,12 +193,12 @@ def solver(expr:List[str],vars:List[Variable]):
     if functions:
         ERR_result.append(f'未知函数:{",".join(functions)}')
     if ERR_result:
-        return '错误：'+'; '.join(ERR_result)
+        return '; '.join(ERR_result)
 
     symbols=list(set(j for i in exprs for j in i.free_symbols))
-    symbols.sort()
-    tg=yield symbols
-    target=[local[i] for i in tg]
+    symbols.sort(key=lambda i:i.name)
+    tg=yield list(map(str,symbols))
+    target=[symbols[i] for i in range(len(symbols)) if tg[i]]
 
     result=sympy.solve(exprs,*target,dict=True)
     yield result
@@ -213,9 +213,9 @@ if __name__ == '__main__':
     # print(solver(['x+y-6','x*y-5'],['x','y'],
     #              [{'id':'x','name':'x','assumptions':{'real':True}},
     #               {'id':'y','name':'y','assumptions':{'real':True}}]))
-    # solve=solver(['(x-5)*(x-2.5)'],
+    # solve=solver(['(x-5)*(x-2.5)','y-1'],
     #              [{'id':'x','name':'x','assumptions':{'integer':True}},
     #               {'id':'y','name':'y','assumptions':{'integer':True}}])
     # print(solve.__next__())
-    # print(solve.send(['x']))
+    # print(solve.send([0,1]))
     pass
