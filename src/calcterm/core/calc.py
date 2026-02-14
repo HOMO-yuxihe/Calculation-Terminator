@@ -1,6 +1,5 @@
 from statistics import variance
 import sympy,keyword
-from sympy.parsing.sympy_parser import parse_expr
 from typing import Dict,List,TypedDict
 
 glob={
@@ -128,7 +127,7 @@ def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
     local['Function']=tracer.Function
 
     try:
-        result=parse_expr(exp,local_dict=local,global_dict=glob)
+        result=sympy.parse_expr(exp,local_dict=local,global_dict=glob)
         ERR_result=[]
         if symbols:=sorted(list(tracer.symbols)):
             ERR_result.append(f'未定义变量:{",".join(symbols)}')
@@ -152,8 +151,8 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
     
-    lm_exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
-    tg_expr=parse_expr(tg,global_dict=glob,local_dict=local)
+    lm_exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
+    tg_expr=sympy.parse_expr(tg,global_dict=glob,local_dict=local)
 
     ERR_result=[]
     if symbols:=sorted(list(tracer.symbols)):
@@ -184,7 +183,7 @@ def solver(expr:List[str],tg:List[str],vars:List[Variable]):
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
-    exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
     target=[local[i] for i in tg]
 
     ERR_result=[]
