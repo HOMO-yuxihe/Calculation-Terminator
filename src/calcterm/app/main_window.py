@@ -285,8 +285,7 @@ class MainWindow(WithSubwindow):
         self.menubar.addAction(self.varMgmt)
 
         #标签页部分
-        self.Tab_font=QFont()
-        self.Tab_font.setFamily('Microsoft Yahei'),self.Tab_font.setPointSize(10)
+        self.Tab_font=QFont('Microsoft Yahei',10)
         self.Tab=QTabWidget(self,font=self.Tab_font)
         self.calcTab=QWidget(self.Tab)
         self.eqalTab=QWidget(self.Tab)
