@@ -90,6 +90,9 @@ def evalf(exp:str,digit:int):
     result=sympy.parse_expr(f'simplify({exp})')
     return str(result.evalf(digit))
 
+def simplify(exp:str):
+    return sympy.parse_expr(f'simplify({exp})')
+
 def parse(exp:str,vars:Dict[str,str]={}):
     '''
     parse:Parse and evaluate expressions written in string.

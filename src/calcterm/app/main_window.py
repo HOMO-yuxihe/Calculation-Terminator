@@ -65,7 +65,7 @@ class OutputWindow(Subwindow):
     
     def simplify(self):
         content=self.display.toPlainText()
-        result=parser.parse_expr(f'simplify({content})')
+        result=parser.simplify(content)
         self.display.setPlainText(str(result))
     
     def eval(self):
