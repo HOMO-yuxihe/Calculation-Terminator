@@ -1,3 +1,4 @@
+import enum
 from statistics import variance
 import sympy,keyword
 from typing import Dict,List,TypedDict
@@ -206,6 +207,35 @@ def solver(expr:List[str],vars:List[Variable]):
     result=sympy.solve(exprs,*target,dict=True)
     yield result
 
+def smartsolver(expr:List[str],vars:List[Variable]):
+    tracer=SymbolTracer()
+    local=localDictGen(vars)
+    local['Symbol']=tracer.Symbol
+    local['Function']=tracer.Function
+
+    exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+
+    ERR_result=[]
+    symbols=sorted(list(tracer.symbols))
+    functions=sorted(list(tracer.functions))
+    if symbols:
+        ERR_result.append(f'未定义变量:{",".join(symbols)}')
+    if functions:
+        ERR_result.append(f'未知函数:{",".join(functions)}')
+    if ERR_result:
+        return '; '.join(ERR_result)
+
+    symbols=list(set(j for i in exprs for j in i.free_symbols))
+    symbols.sort(key=lambda i:i.name)
+    tg=yield list(map(str,symbols))
+    target=[symbols[i] for i in range(len(symbols)) if tg[i]]
+
+    result=sympy.solve(exprs,*target,dict=True)
+    if result==[]:
+        result=[{symbol:i[index] for index,symbol in enumerate(target)}
+                for i in list(sympy.nonlinsolve(exprs,*target))]
+    yield result
+
 if __name__ == '__main__':
     # x,y=sympy.symbols('x y',real=1,positive=(1,1))
     # lagrange([4*x+y+x*y-5],16*x**2+y**2,{x:'x',y:'y'})
@@ -221,4 +251,9 @@ if __name__ == '__main__':
     #               {'id':'y','name':'y','assumptions':{'integer':True}}])
     # print(solve.__next__())
     # print(solve.send([0,1]))
+    # solve=smartsolver(['x**3 + y - 9','x + y**2 - 5'],
+    #             [{'id':'x','name':'x','assumptions':{'real':1}},
+    #              {'id':'y','name':'y','assumptions':{'real':1}}])
+    # print(solve.__next__())
+    # print(solve.send([1,1]))
     pass

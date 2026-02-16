@@ -362,7 +362,7 @@ class MainWindow(WithSubwindow):
         if not exprs:
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
-        solver=parser.solver(exprs,self.variables)
+        solver=parser.smartsolver(exprs,self.variables)
         try:
             usedVariables=solver.__next__()
         except StopIteration as e:
@@ -370,7 +370,6 @@ class MainWindow(WithSubwindow):
             return
         target,ok=VariableSelector.get(self,usedVariables)
         if not ok:return
-        print(target)
         res=solver.send(target)
         self.windows.append(OutputWindow(self,str(res)))
         
