@@ -87,6 +87,14 @@ def localDictGen(vars:List[Variable]):
         local[i['id']]=sympy.Symbol(i['name'],**i['assumptions'])
     return local
 
+def errMsgGen(tracer:SymbolTracer):
+    ERR_result=[]
+    if symbols:=sorted(list(tracer.symbols)):
+        ERR_result.append(f'未定义变量:{",".join(symbols)}')
+    if functions:=sorted(list(tracer.functions)):
+        ERR_result.append(f'未知函数:{",".join(functions)}')
+    return '错误：'+'; '.join(ERR_result) if ERR_result else None
+
 def evalf(exp:str,digit:int):
     result=sympy.parse_expr(f'simplify({exp})')
     return str(result.evalf(digit))
@@ -132,14 +140,9 @@ def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
 
     try:
         result=sympy.parse_expr(exp,local_dict=local,global_dict=glob)
-        ERR_result=[]
-        if symbols:=sorted(list(tracer.symbols)):
-            ERR_result.append(f'未定义变量:{",".join(symbols)}')
-        if functions:=sorted(list(tracer.functions)):
-            ERR_result.append(f'未知函数:{",".join(functions)}')
+        ERR_result=errMsgGen(tracer)
         if ERR_result:
-            return '错误：'+'; '.join(ERR_result)
-
+            return ERR_result
         if ifeval:
             result=sympy.N(result,digit)
     except Exception as e:
@@ -158,13 +161,9 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
     lm_exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
     tg_expr=sympy.parse_expr(tg,global_dict=glob,local_dict=local)
 
-    ERR_result=[]
-    if symbols:=sorted(list(tracer.symbols)):
-        ERR_result.append(f'未定义变量:{",".join(symbols)}')
-    if functions:=sorted(list(tracer.functions)):
-        ERR_result.append(f'未知函数:{",".join(functions)}')
+    ERR_result=errMsgGen(tracer)
     if ERR_result:
-        return '错误：'+'; '.join(ERR_result)
+        return ERR_result
 
     Lag=tg_expr
     for i,lamda in enumerate(lambdas):
@@ -189,15 +188,9 @@ def solver(expr:List[str],vars:List[Variable]):
 
     exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
 
-    ERR_result=[]
-    symbols=sorted(list(tracer.symbols))
-    functions=sorted(list(tracer.functions))
-    if symbols:
-        ERR_result.append(f'未定义变量:{",".join(symbols)}')
-    if functions:
-        ERR_result.append(f'未知函数:{",".join(functions)}')
+    ERR_result=errMsgGen(tracer)
     if ERR_result:
-        return '; '.join(ERR_result)
+        return ERR_result
 
     symbols=list(set(j for i in exprs for j in i.free_symbols))
     symbols.sort(key=lambda i:i.name)
@@ -215,15 +208,9 @@ def smartsolver(expr:List[str],vars:List[Variable]):
 
     exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
 
-    ERR_result=[]
-    symbols=sorted(list(tracer.symbols))
-    functions=sorted(list(tracer.functions))
-    if symbols:
-        ERR_result.append(f'未定义变量:{",".join(symbols)}')
-    if functions:
-        ERR_result.append(f'未知函数:{",".join(functions)}')
+    ERR_result=errMsgGen(tracer)
     if ERR_result:
-        return '; '.join(ERR_result)
+        return ERR_result
 
     symbols=list(set(j for i in exprs for j in i.free_symbols))
     symbols.sort(key=lambda i:i.name)
