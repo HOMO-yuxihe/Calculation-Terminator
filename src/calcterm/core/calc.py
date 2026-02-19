@@ -37,6 +37,11 @@ glob={
 
     'LambertW':sympy.LambertW,
 
+    'CRootOf':sympy.CRootOf,
+    'ComplexRootOf':sympy.ComplexRootOf,
+    'RootSum':sympy.RootSum,
+    'rootof':sympy.rootof,
+
     'Integer':sympy.Integer,
     'Float':sympy.Rational,
     # 'Function':sympy.Function,
