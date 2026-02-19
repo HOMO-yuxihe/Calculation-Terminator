@@ -1,7 +1,6 @@
-import enum
-from statistics import variance
 import sympy,keyword
 from typing import Dict,List,TypedDict
+from .struct_template import Variable,UndefinedFunction,AppliedFunction,LambdaFunction
 
 glob={
     '__builtins__':{},
@@ -49,11 +48,6 @@ glob={
 
     'solve':sympy.solve
 }
-
-class Variable(TypedDict):
-    id:str
-    name:str
-    assumptions:Dict[str,bool]
 
 class SymbolTracer():
     def __init__(self):
