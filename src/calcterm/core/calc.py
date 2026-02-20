@@ -1,4 +1,5 @@
 import sympy,keyword
+from sympy.core.function import AppliedUndef
 from typing import Dict,List,TypedDict
 from .struct_template import *
 
@@ -224,6 +225,26 @@ def smartsolver(expr:List[str],vars:List[Variable]):
     if result==[]:
         result=[{symbol:i[index] for index,symbol in enumerate(target)}
                 for i in list(sympy.nonlinsolve(exprs,*target))]
+    yield result
+
+def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction]):
+    tracer=SymbolTracer()
+    local=localDictGen(vars,functions)
+    local['Symbol']=tracer.Symbol
+    local['Function']=tracer.Function
+
+    exprs:List[sympy.Expr]=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+
+    ERR_result=errMsgGen(tracer)
+    if ERR_result:
+        return ERR_result
+
+    functions=list(set(j for i in exprs for j in i.atoms(AppliedUndef)))
+    functions.sort(key=lambda i:i.__repr__())
+    tg=yield list(map(str,functions))
+    target=[functions[i] for i in range(len(functions)) if tg[i]]
+
+    result=sympy.dsolve(exprs,target)
     yield result
 
 if __name__ == '__main__':

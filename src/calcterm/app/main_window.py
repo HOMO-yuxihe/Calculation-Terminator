@@ -206,10 +206,12 @@ class MainWindow(WithSubwindow):
         self.Tab=QTabWidget(self,font=self.Tab_font)
         self.calcTab=QWidget(self.Tab)
         self.eqalTab=QWidget(self.Tab)
+        self.deqalTab=QWidget(self.Tab)
         self.ineqalTab=QWidget(self.Tab)
         self.lagrangeTab=QWidget(self.Tab)
         self.Tab.addTab(self.calcTab,'代数/数值计算')
         self.Tab.addTab(self.eqalTab,'方程求解')
+        self.Tab.addTab(self.deqalTab,'微分方程求解')
         self.Tab.addTab(self.ineqalTab,'不等式求解')
         self.Tab.addTab(self.lagrangeTab,'拉格朗日乘数')
         self.setCentralWidget(self.Tab)
@@ -243,6 +245,17 @@ class MainWindow(WithSubwindow):
         self.eqal_layout.addWidget(self.eqal_inputTip)
         self.eqal_layout.addWidget(self.eqal_input)
         self.eqal_layout.addWidget(self.eqal_calc)
+
+        #微分方程求解部分
+        self.deqal_layout=QVBoxLayout()
+        self.deqalTab.setLayout(self.deqal_layout)
+        self.deqal_inputTip=QLabel('输入微分方程',font=font1,alignment=Qt.AlignCenter)
+        self.deqal_input=MultiLineEdit(font=font2)
+        self.deqal_calc=QPushButton('求解',font=font1)
+        self.deqal_calc.clicked.connect(self.dsolve)
+        self.deqal_layout.addWidget(self.deqal_inputTip)
+        self.deqal_layout.addWidget(self.deqal_input)
+        self.deqal_layout.addWidget(self.deqal_calc)
 
         #拉格朗日部分
         self.lagrange_layout=QVBoxLayout()
@@ -286,6 +299,22 @@ class MainWindow(WithSubwindow):
             QMessageBox.warning(self,'错误',str(e))
             return
         target,ok=VariableSelector.get(self,usedVariables)
+        if not ok:return
+        res=solver.send(target)
+        self.windows.append(OutputWindow(self,str(res)))
+    
+    def dsolve(self):
+        exprs=[j for i in self.deqal_input.lines if (j:=i.text().strip())]
+        if not exprs:
+            QMessageBox.warning(self,'错误','方程组不能为空')
+            return
+        solver=parser.dsolver(exprs,self.variables,self.functions)
+        try:
+            usedFunctions=solver.__next__()
+        except StopIteration as e:
+            QMessageBox.warning(self,'错误',str(e))
+            return
+        target,ok=VariableSelector.get(self,usedFunctions)
         if not ok:return
         res=solver.send(target)
         self.windows.append(OutputWindow(self,str(res)))
