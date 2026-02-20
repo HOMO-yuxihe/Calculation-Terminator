@@ -1,11 +1,35 @@
 import sys
 from typing import List
-from PyQt5.QtWidgets import (QTextEdit,QAction,QLineEdit,QWidget,
-                             QScrollArea,QVBoxLayout,QShortcut,
-                             QCheckBox)
-from PyQt5.QtGui import QKeySequence,QKeyEvent
+from PyQt5.QtWidgets import (QHBoxLayout,QListView,QMessageBox,
+                             QPushButton, QTextEdit,QAction,QLineEdit,
+                             QWidget,QScrollArea,QVBoxLayout,QShortcut,
+                             QCheckBox,QMainWindow)
+from PyQt5.QtGui import QKeySequence,QKeyEvent, QStandardItem, QStandardItemModel
 from PyQt5.QtCore import Qt,QTimer,QEvent
-from sympy import var
+
+class Subwindow(QMainWindow):
+    def __init__(self,parent):
+        super().__init__()
+        self.par=parent
+    
+    def closeEvent(self, event):
+        self.par.closeSubwindow(self)
+        return super().closeEvent(event)
+
+class WithSubwindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.windows=[]
+
+    def closeSubwindow(self,target:QMainWindow):
+        self.windows.remove(target)
+        target.close()
+    
+    def closeEvent(self, event):
+        for i in self.windows.copy():
+            i.close()
+        return super().closeEvent(event)
+
 
 class MTextEdit(QTextEdit):
     def __init__(self,menus=[],*args,**kw):
@@ -120,4 +144,92 @@ class MultiLineSelector(QWidget):
         self.content_widget.setLayout(self.content_layout)
         self.scroll_area.setWidget(self.content_widget)        
         self.main_layout.addWidget(self.scroll_area)
+
+class GenericModifier(Subwindow):
+    class _ListView(QListView):
+        def __init__(self,parent,*args,**kw):
+            super().__init__(*args,**kw)
+            self.par=parent
+        def keyPressEvent(self, event:QKeyEvent):
+            if event.key()==Qt.Key_F5:
+                self.par.refresh()
+                event.ignore()
+            else:
+                return super().keyPressEvent(event)
+    def __init__(self,parent,title,fonts,modifier,targetList):
+        Subwindow.__init__(self,parent)
+        # WithSubwindow.__init__(self)
+        self.resize(400,300)
+        self.setMinimumSize(300,200)
+        self.setWindowTitle(title)
+        self.par=parent
+        self.modifier=modifier
+        font1,font2=fonts
+        self.setFont(font1)
+
+        self.central=QWidget()
+        self.setCentralWidget(self.central)
+        self.mainLayout=QHBoxLayout()
+        self.central.setLayout(self.mainLayout)
+        self.variables=targetList
+        self.varModel=QStandardItemModel()
+
+        self.list=self._ListView(self,font=font2)
+        self.list.setModel(self.varModel)
+        self.list.clicked.connect(self.showInfo)
+        self.sidebar=QVBoxLayout()
+
+        self.addBtn=QPushButton('添加')
+        self.editBtn=QPushButton('修改')
+        self.delBtn=QPushButton('删除')
+        self.info=QTextEdit()
+        self.info.setFixedWidth(150)
+        self.info.setReadOnly(1)
+        self.addBtn.clicked.connect(self.addOpen)
+        self.editBtn.clicked.connect(self.editOpen)
+        self.delBtn.clicked.connect(self.remove)
+
+        self.sidebar.addWidget(self.addBtn)
+        self.sidebar.addWidget(self.editBtn)
+        self.sidebar.addWidget(self.delBtn)
+        self.sidebar.addWidget(self.info)
+
+        self.mainLayout.addWidget(self.list)
+        self.mainLayout.addLayout(self.sidebar)
+
+        self.refresh()
+    
+    def addOpen(self):
+        if (res:=self.modifier.get(self,variableList=self.variables))[1]:
+            self.variables.append(res[0])
+            self.varModel.appendRow(QStandardItem(res[0]['id']))
+    
+    def editOpen(self):
+        model=self.list.selectionModel()
+        if indexes:=model.selectedIndexes():
+            if (res:=self.modifier.get(self,self.variables[indexes[0].row()],self.variables))[1]:
+                self.variables[indexes[0].row()]=res[0]
+                self.varModel.setData(indexes[0],res[0]['id'])
+                self.showInfo()
+        else:
+            QMessageBox.warning(self,'错误','请选中一个变量')
+
+    def remove(self):
+        model=self.list.selectionModel()
+        if indexes:=model.selectedIndexes():
+            index=indexes[0].row()
+            self.varModel.removeRow(index)
+            self.variables.pop(index)
+            self.showInfo()
+        else:
+            QMessageBox.warning(self,'错误','请选中一个变量')
+
+    def refresh(self):
+        self.varModel.clear()
+        for i in self.variables:
+            if not i:
+                self.variables.remove(i)
+                continue
+            self.varModel.appendRow(QStandardItem(i['id']))
+
     

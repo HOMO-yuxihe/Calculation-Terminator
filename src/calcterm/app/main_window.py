@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
 from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
-from calcterm.widgets.common import MTextEdit,MultiLineEdit,MultiLineSelector
+from calcterm.widgets.common import *
 from typing import List,Dict,Union
 
 font1=QFont()
@@ -19,29 +19,6 @@ font2=QFont()
 font2.setFamily('Consolas'),font2.setPointSize(18)
 fontdefault=QFont()
 fontdefault.setFamily('Microsoft Yahei'),fontdefault.setPointSize(9)
-
-class Subwindow(QMainWindow):
-    def __init__(self,parent):
-        super().__init__()
-        self.par=parent
-    
-    def closeEvent(self, event):
-        self.par.closeSubwindow(self)
-        return super().closeEvent(event)
-
-class WithSubwindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.windows=[]
-
-    def closeSubwindow(self,target:QMainWindow):
-        self.windows.remove(target)
-        target.close()
-    
-    def closeEvent(self, event):
-        for i in self.windows.copy():
-            i.close()
-        return super().closeEvent(event)
 
 class OutputWindow(Subwindow):
     def __init__(self,parent,content):
@@ -135,91 +112,9 @@ class VariableModifier(QDialog):
         return dialog.res,(result==QDialog.Accepted)
 
 
-class VariableManager(Subwindow):
-    class _ListView(QListView):
-        def __init__(self,parent,*args,**kw):
-            super().__init__(*args,**kw)
-            self.par=parent
-        def keyPressEvent(self, event:QKeyEvent):
-            if event.key()==Qt.Key_F5:
-                self.par.refresh()
-                event.ignore()
-            else:
-                return super().keyPressEvent(event)
+class VariableManager(GenericModifier):
     def __init__(self,parent,variables):
-        Subwindow.__init__(self,parent)
-        # WithSubwindow.__init__(self)
-        self.resize(400,300)
-        self.setMinimumSize(300,200)
-        self.setWindowTitle('变量管理器')
-        self.par=parent
-        self.setFont(font1)
-
-        self.central=QWidget()
-        self.setCentralWidget(self.central)
-        self.mainLayout=QHBoxLayout()
-        self.central.setLayout(self.mainLayout)
-        self.variables:List[parser.Variable]=variables
-        self.varModel=QStandardItemModel()
-
-        self.list=self._ListView(self,font=font2)
-        self.list.setModel(self.varModel)
-        self.list.clicked.connect(self.showInfo)
-        self.sidebar=QVBoxLayout()
-
-        self.addBtn=QPushButton('添加')
-        self.editBtn=QPushButton('修改')
-        self.delBtn=QPushButton('删除')
-        self.info=QTextEdit()
-        self.info.setFixedWidth(150)
-        self.info.setReadOnly(1)
-        self.addBtn.clicked.connect(self.addOpen)
-        self.editBtn.clicked.connect(self.editOpen)
-        self.delBtn.clicked.connect(self.remove)
-
-        self.sidebar.addWidget(self.addBtn)
-        self.sidebar.addWidget(self.editBtn)
-        self.sidebar.addWidget(self.delBtn)
-        self.sidebar.addWidget(self.info)
-
-        self.mainLayout.addWidget(self.list)
-        self.mainLayout.addLayout(self.sidebar)
-
-        self.refresh()
-    
-    def addOpen(self):
-        if (res:=VariableModifier.get(self,variableList=self.variables))[1]:
-            self.variables.append(res[0])
-            self.varModel.appendRow(QStandardItem(res[0]['id']))
-    
-    def editOpen(self):
-        model=self.list.selectionModel()
-        if indexes:=model.selectedIndexes():
-            
-            if (res:=VariableModifier.get(self,self.variables[indexes[0].row()],self.variables))[1]:
-                self.variables[indexes[0].row()]=res[0]
-                self.varModel.setData(indexes[0],res[0]['id'])
-                self.showInfo()
-        else:
-            QMessageBox.warning(self,'错误','请选中一个变量')
-
-    def remove(self):
-        model=self.list.selectionModel()
-        if indexes:=model.selectedIndexes():
-            index=indexes[0].row()
-            self.varModel.removeRow(index)
-            self.variables.pop(index)
-            self.showInfo()
-        else:
-            QMessageBox.warning(self,'错误','请选中一个变量')
-
-    def refresh(self):
-        self.varModel.clear()
-        for i in self.variables:
-            if not i:
-                self.variables.remove(i)
-                continue
-            self.varModel.appendRow(QStandardItem(i['id']))
+        super().__init__(parent,'变量管理器',(font1,font2),VariableModifier,variables)
     
     def showInfo(self,index:QModelIndex=None):
         if index==None:
@@ -232,6 +127,21 @@ class VariableManager(Subwindow):
             row=index.row()
         var=self.variables[row]
         self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")
+
+class FunctionManager(GenericModifier):
+    def __init__(self,parent,functions):
+        super().__init__(parent,'函数管理器',(font1,font2),VariableModifier,functions)
+    def showInfo(self,index:QModelIndex=None):
+        if index==None:
+            if indexes:=self.list.selectionModel().selectedIndexes():
+                row=indexes[0].row()
+            else:
+                self.info.clear()
+                return
+        else:
+            row=index.row()
+        var=self.variables[row]
+        self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")  
     
 class VariableSelector(QDialog):
     def __init__(self,parent,vars:List[str]):
@@ -278,11 +188,18 @@ class MainWindow(WithSubwindow):
         self.menubar=QMenuBar(self,font=fontdefault)
         self.setMenuBar(self.menubar)
         self.variables=[]
+        self.functions=[]
         self.variablemanager=VariableManager(self,self.variables)
+        self.functionmanager=FunctionManager(self,self.functions)
         self.windows.append(self.variablemanager)
         self.varMgmt=QAction('变量管理',self.menubar,triggered=self.openVariableManager)
         self.varMgmtopened=0
-        self.menubar.addAction(self.varMgmt)
+        self.funcMgmt=QAction('函数管理',self.menubar,triggered=self.openFunctionManager)
+        self.funcMgmtopened=0
+        self.namespaceMgmt=QMenu('命名空间管理',self.menubar)
+        self.namespaceMgmt.addAction(self.varMgmt)
+        self.namespaceMgmt.addAction(self.funcMgmt)
+        self.menubar.addMenu(self.namespaceMgmt)
 
         #标签页部分
         self.Tab_font=QFont('Microsoft Yahei',10)
@@ -348,7 +265,7 @@ class MainWindow(WithSubwindow):
         if not expr.strip():
             QMessageBox.warning(self,'错误','表达式不能为空')
             return
-        result=parser.calc(expr,self.variables)
+        result=parser.calc(expr,self.variables,self.functions)
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
@@ -362,7 +279,7 @@ class MainWindow(WithSubwindow):
         if not exprs:
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
-        solver=parser.smartsolver(exprs,self.variables)
+        solver=parser.smartsolver(exprs,self.variables,self.functions)
         try:
             usedVariables=solver.__next__()
         except StopIteration as e:
@@ -380,7 +297,7 @@ class MainWindow(WithSubwindow):
         if not target.strip():
             QMessageBox.warning(self,'错误','目标函数不能为空')
             return
-        if isinstance(res:=parser.lagrange(limits,target,self.variables),str):
+        if isinstance(res:=parser.lagrange(limits,target,self.variables,self.functions),str):
             self.windows.append(OutputWindow(self,res))
         else:
             self.windows.append(OutputWindow(self,'\n'.join(map(str,res))))
@@ -396,6 +313,17 @@ class MainWindow(WithSubwindow):
             self.variablemanager=VariableManager(self,self.variables)
             self.variablemanager.show()
             self.windows.append(self.variablemanager)
+
+    def openFunctionManager(self):
+        if self.functionmanager in self.windows:
+            self.functionmanager.show()
+            self.functionmanager.raise_()
+            self.functionmanager.activateWindow()
+            self.functionmanager.setFocus()
+        else:
+            self.functionmanager=FunctionManager(self,self.functions)
+            self.functionmanager.show()
+            self.windows.append(self.functionmanager)
     
     def closeEvent(self, event):
         super().closeEvent(event)

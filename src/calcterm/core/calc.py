@@ -1,6 +1,6 @@
 import sympy,keyword
 from typing import Dict,List,TypedDict
-from .struct_template import Variable,UndefinedFunction,AppliedFunction,LambdaFunction
+from .struct_template import *
 
 glob={
     '__builtins__':{},
@@ -80,10 +80,12 @@ class SymbolTracer():
 #         local[id]=sympy.Symbol(name)
 #     return local
 
-def localDictGen(vars:List[Variable]):
+def localDictGen(vars:List[Variable],funcs:List[UndefinedFunction]):# -> dict:
     local={}
     for i in vars:
         local[i['id']]=sympy.Symbol(i['name'],**i['assumptions'])
+    for i in funcs:
+        local[i['id']]=sympy.Function(i['name'],**i['assumptions'])
     return local
 
 def errMsgGen(tracer:SymbolTracer):
@@ -118,7 +120,7 @@ def parse(exp:str,vars:Dict[str,str]={}):
         return e
     return str(result).replace('log','ln')
 
-def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
+def calc(exp:str,vars:List[Variable],funcs:List[UndefinedFunction],ifeval:bool=False,digit=15) -> str:
     '''
     parse2:解析Sympy表达式
     
@@ -126,6 +128,8 @@ def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
     :type exp: str
     :param vars: 变量字典(变量标识符名:变量显示名)
     :type vars: dict
+    :param funcs: 函数字典(函数标识符名:函数显示名)
+    :type funcs: dict
     :param ifeval: 输出数值形式
     :type ifeval: bool
     :param digit: 有效数字位数
@@ -133,7 +137,7 @@ def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
     :rtype: str
     '''
     tracer=SymbolTracer()
-    local=localDictGen(vars)
+    local=localDictGen(vars,funcs)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
@@ -149,10 +153,10 @@ def calc(exp:str,vars:List[Variable],ifeval:bool=False,digit=15) -> str:
     
     return str(result).replace('log','ln')
 
-def lagrange(lm:List[str],tg:str,vars:List[Variable]):
+def lagrange(lm:List[str],tg:str,vars:List[Variable],funcs:List[UndefinedFunction]):
     lambdas=[sympy.Symbol(f'λ_{i}',real=1) for i in range(1,len(lm)+1)]
     tracer=SymbolTracer()
-    local=localDictGen(vars)
+    local=localDictGen(vars,funcs)
     variables=list(local.values())+lambdas
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
@@ -179,10 +183,10 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable]):
         i['result']=res
     return solves
 
-def solver(expr:List[str],vars:List[Variable]):
+def solver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]):
     tracer=SymbolTracer()
-    local=localDictGen(vars)
-    local['Symbol']=tracer.Symbol
+    local=localDictGen(vars,funcs)
+    local['Symbol']=tracer.Symbol5
     local['Function']=tracer.Function
 
     exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
