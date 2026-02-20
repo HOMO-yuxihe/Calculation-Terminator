@@ -246,25 +246,3 @@ def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction]
 
     result=sympy.dsolve(exprs,target)
     yield result
-
-if __name__ == '__main__':
-    # x,y=sympy.symbols('x y',real=1,positive=(1,1))
-    # lagrange([4*x+y+x*y-5],16*x**2+y**2,{x:'x',y:'y'})
-    # lagrange(['4*x+y+x*y-5'],'16*x**2+y**2',
-    #          [{'id':'x','name':'x','assumptions':{'real':True}},
-    #           {'id':'y','name':'y','assumptions':{'real':True}}])
-    # print(parse2('abc'))
-    # print(solver(['x+y-6','x*y-5'],['x','y'],
-    #              [{'id':'x','name':'x','assumptions':{'real':True}},
-    #               {'id':'y','name':'y','assumptions':{'real':True}}]))
-    # solve=solver(['(x-5)*(x-2.5)','y-1'],
-    #              [{'id':'x','name':'x','assumptions':{'integer':True}},
-    #               {'id':'y','name':'y','assumptions':{'integer':True}}])
-    # print(solve.__next__())
-    # print(solve.send([0,1]))
-    # solve=smartsolver(['x**3 + y - 9','x + y**2 - 5'],
-    #             [{'id':'x','name':'x','assumptions':{'real':1}},
-    #              {'id':'y','name':'y','assumptions':{'real':1}}])
-    # print(solve.__next__())
-    # print(solve.send([1,1]))
-    pass
