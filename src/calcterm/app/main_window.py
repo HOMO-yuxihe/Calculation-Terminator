@@ -11,6 +11,7 @@ from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKey
 from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
 from calcterm.widgets.common import *
+from calcterm.widgets.latex_display import *
 from typing import List,Dict,Union
 
 font1=QFont()
@@ -30,8 +31,9 @@ class OutputWindow(Subwindow):
 
         simplifyAction=QAction('化简 (Ctrl+S)',shortcut='Ctrl+S',triggered=self.simplify)
         evalAction=QAction('求值 (Ctrl+E)',shortcut='Ctrl+E',triggered=self.eval)
+        viewAction=QAction('预览 (Ctrl+V)',shortcut='Ctrl+V',triggered=self.view)
         self.closeShortcut=QShortcut(QKeySequence('Escape'),self,activated=self.close)
-        self.display=MTextEdit([simplifyAction,evalAction],content,font=font2,readOnly=1)
+        self.display=MTextEdit([simplifyAction,evalAction,viewAction],content,font=font2,readOnly=1)
 
         self.setCentralWidget(self.display)
         self.show()
@@ -49,6 +51,12 @@ class OutputWindow(Subwindow):
         content=self.display.toPlainText()
         if (res:=QInputDialog.getInt(self,'有效数字位数','高精度计算',15))[1]:
             self.display.setPlainText(parser.evalf(content,res[0]))
+    
+    def view(self):
+        content=self.display.toPlainText()
+        disp=LatexDisplay(expr2latex(content))
+        disp.show()
+        self.par.windows.append(disp)
 
 class VariableModifier(QDialog):
 
