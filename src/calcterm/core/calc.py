@@ -204,9 +204,9 @@ def solver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]):
     result=sympy.solve(exprs,*target,dict=True)
     yield result
 
-def smartsolver(expr:List[str],vars:List[Variable]):
+def smartsolver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]):
     tracer=SymbolTracer()
-    local=localDictGen(vars)
+    local=localDictGen(vars,funcs)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
