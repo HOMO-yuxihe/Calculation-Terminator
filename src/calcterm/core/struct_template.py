@@ -17,3 +17,15 @@ class LambdaFunction(TypedDict):
     args:List[Variable]
     expr:str
     assumptions:Dict[str,bool]
+
+class Namespace(TypedDict):
+    variables:List[Variable]
+    functions:List[UndefinedFunction]
+    lambdas:List[LambdaFunction]
+
+class SingleNamespace(TypedDict):
+    type:str
+    id:str
+    name:str
+    assumptions:Dict[str,bool]
+    expr:str
