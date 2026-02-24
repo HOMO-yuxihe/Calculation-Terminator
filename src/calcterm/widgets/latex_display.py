@@ -11,17 +11,14 @@ class LatexDisplay(QWidget):
     class _GraphicsView(QGraphicsView):
         def __init__(self,parent):
             super().__init__(parent)
+            self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         
         def wheelEvent(self, event:QWheelEvent):
             if event.modifiers() & Qt.ControlModifier:
                 factor=1.25 if event.angleDelta().y()>0 else 0.8
-                mouse_pos = event.pos()
-                scene_pos = self.mapToScene(mouse_pos)
-
-                self.centerOn(scene_pos)
-                self.scale(factor,factor)
-                self.centerOn(scene_pos)
+                self.scale(factor, factor)
                 event.accept()
+
             elif event.modifiers() & Qt.ShiftModifier:
                 horizontal_wheel_event = QWheelEvent(
                     # 1. 基础位置参数（保持和原事件一致）
@@ -41,7 +38,7 @@ class LatexDisplay(QWidget):
                     event.inverted(),             # inverted: 是否反向滚动
                     event.source()                # source: 事件源
                 )
-                QApplication.sendEvent(self.horizontalScrollBar(), horizontal_wheel_event)
+                QApplication.sendEvent(self.horizontalScrollBar(),horizontal_wheel_event)
             else:
                 return super().wheelEvent(event)
     def __init__(self,tex:str,font_size=12,*args,**kw):
@@ -64,6 +61,7 @@ class LatexDisplay(QWidget):
         layout.setContentsMargins(0,0,0,0)
         self.setLayout(layout)
         self.setLatex(tex,font_size)
+        self.setFocus()
     
     def setLatex(self,tex:str,font_size=None):
         if font_size is not None:self.font_size=font_size
