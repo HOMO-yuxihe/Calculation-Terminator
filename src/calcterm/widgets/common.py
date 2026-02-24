@@ -75,21 +75,28 @@ class MultiLineEdit(QWidget):
                 else:return super().keyPressEvent(event)
             else:
                 return super().keyPressEvent(event)
-    def __init__(self,*args,**kw):
+    def __init__(self,content=[],*args,**kw):
         super().__init__(*args,**kw)
         self.main_layout = QVBoxLayout(self)
         self.scroll_area = QScrollArea(self,widgetResizable=1)
         self.content_widget = QWidget()
         self.content_layout = QVBoxLayout(self.content_widget,spacing=8)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.lines = [self._LineEdit(self,False)]
-        self.lines[0].returnPressed.connect(lambda: self.add(self.lines[0]))
-        self.content_layout.addWidget(self.lines[0])
+        if content:
+            print(content)
+            self.lines = [self._LineEdit(self,True,text=i) for i in content]
+            self.lines[0].returnPressed.connect(lambda: self.add(self.lines[0]))
+            self.lines[0].canBeDeleted=False
+        else:
+            self.lines = [self._LineEdit(self,False)]
+            self.lines[0].returnPressed.connect(lambda: self.add(self.lines[0]))
+        for i in self.lines:
+            self.content_layout.addWidget(i)
         self.scroll_area.setWidget(self.content_widget)
         self.main_layout.addWidget(self.scroll_area, stretch=1)
 
     def add(self,obj:QWidget):
-        item = self._LineEdit(self)
+        item = self._LineEdit(self,font=self.font())
         shortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace),item,
                              context=Qt.WidgetShortcut,activated=lambda:self.delete(item))
         index = self.content_layout.indexOf(obj) + 1

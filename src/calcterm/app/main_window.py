@@ -64,9 +64,11 @@ class VariableModifier(QDialog):
         self.setLayout(self.mainLayout)
         self.idLayout=QHBoxLayout()
         self.nameLayout=QHBoxLayout()
+        self.assumpLayout=QVBoxLayout()
         self.exitLayout=QHBoxLayout()
         self.mainLayout.addLayout(self.idLayout)
         self.mainLayout.addLayout(self.nameLayout)
+        self.mainLayout.addLayout(self.assumpLayout)
         self.mainLayout.addLayout(self.exitLayout)
 
         self.idTip=QLabel('变量标识符:')
@@ -84,6 +86,13 @@ class VariableModifier(QDialog):
         self.cancelBtn.clicked.connect(self.reject)
         self.exitLayout.addWidget(self.addBtn)
         self.exitLayout.addWidget(self.cancelBtn)
+
+        self.assumpTip=QLabel('变量断言:')
+        self.assumpInput=MultiLineEdit(content=[f'{i}:{j}' for i,j in variable['assumptions'].items()],font=QFont('Consolas',14))
+        self.assumpInput.content_layout.setContentsMargins(0,0,0,0)
+        self.assumpInput.scroll_area.setStyleSheet('QScrollArea {border:none}')
+        self.assumpLayout.addWidget(self.assumpTip)
+        self.assumpLayout.addWidget(self.assumpInput)
         self.res={}
     
     def mod(self):
@@ -102,7 +111,19 @@ class VariableModifier(QDialog):
         if self.id.text() in self.varIds and self.id.text() != self.srcid:
             QMessageBox.warning(self,'错误','标识符已存在')
             return
-        self.res:parser.Variable={'id':self.id.text(),'name':self.name.text(),'assumptions':{}}
+        assump={}
+        for i in self.assumpInput.lines:
+            if (text:=i.text().strip()):
+                if ':' not in text:
+                    QMessageBox.warning(self,'错误','断言格式错误')
+                    return
+                key,value=text.split(':',1)
+                if parser.is_assumption(key.strip()):
+                    assump[key.strip()]=value.strip()
+                else:
+                    QMessageBox.warning(self,'错误',f'断言"{key.strip()}"不合法')
+                    return
+        self.res:parser.Variable={'id':self.id.text(),'name':self.name.text(),'assumptions':assump}
         self.accept()
     
     @staticmethod
@@ -126,7 +147,8 @@ class VariableManager(GenericModifier):
         else:
             row=index.row()
         var=self.variables[row]
-        self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")
+        
+        self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: \n"+('无' if not var['assumptions'].items() else ';\n'.join(f'{i}:{j}' for i,j in var['assumptions'].items())))
 
 class FunctionManager(GenericModifier):
     def __init__(self,parent,functions):

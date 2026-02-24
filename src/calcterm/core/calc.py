@@ -1,5 +1,6 @@
 import sympy,keyword
 from sympy.core.function import AppliedUndef
+from sympy.core.assumptions_generated import defined_facts
 from typing import Dict,List,TypedDict
 from .struct_template import *
 
@@ -48,6 +49,15 @@ glob={
     # 'Symbol':sympy.Symbol,
 
     'solve':sympy.solve
+}
+
+VALID_FUNCTION_ASSUMPTIONS = {
+        'real', 'imaginary', 'complex',
+        'finite', 'infinite',
+        'continuous', 'differentiable', 'analytic',
+        'monotonic', 'increasing', 'decreasing',
+        'even', 'odd', 'periodic',
+        'commutative'
 }
 
 class SymbolTracer():
@@ -246,3 +256,9 @@ def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction]
 
     result=sympy.dsolve(exprs,target)
     yield result
+
+def is_assumption(assump:str):
+    return (assump in defined_facts) or (assump in VALID_FUNCTION_ASSUMPTIONS)
+
+def is_function_assumption(assump:str):
+    return assump in VALID_FUNCTION_ASSUMPTIONS
