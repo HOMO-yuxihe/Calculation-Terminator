@@ -20,6 +20,10 @@ class WithSubwindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.windows=[]
+    
+    def createSubwindow(self,window,*args,**kw):
+        self.windows.append(window)
+        window.show()
 
     def closeSubwindow(self,target:QMainWindow):
         self.windows.remove(target)
@@ -32,6 +36,20 @@ class WithSubwindow(QMainWindow):
 
 
 class MTextEdit(QTextEdit):
+    def __init__(self,menus=[],*args,**kw):
+        super().__init__(*args,**kw)
+        self.menu=menus
+    
+    def setMenu(self,menus:List[QAction]=[]):
+        self.menu=menus
+    
+    def contextMenuEvent(self, event):
+        menu = self.createStandardContextMenu()
+        menu.addSeparator()
+        for i in self.menu:menu.addAction(i)
+        menu.exec(event.globalPos())
+
+class MLineEdit(QLineEdit):
     def __init__(self,menus=[],*args,**kw):
         super().__init__(*args,**kw)
         self.menu=menus
@@ -124,6 +142,15 @@ class MultiLineEdit(QWidget):
         if index<len(self.lines)-1:
             self.lines[index+1].setFocus()
             self.lines[index+1].setCursorPosition(len(self.lines[index+1].text()))
+
+class MultiMLineEdit(MultiLineEdit):
+    def __init__(self,menus=[],*args,**kw):
+        class _LineEdit(MLineEdit,MultiLineEdit._LineEdit):
+            def __init__(self,parent,canBeDeleted=True,*args,**kw):
+                super().__init__(parent,canBeDeleted,*args,**kw)
+                self.menu=menus
+        self._LineEdit=_LineEdit
+        super().__init__(*args,**kw)
 
 class MultiLineSelector(QWidget):
     def __init__(self,vars:List[str],*args,**kw):

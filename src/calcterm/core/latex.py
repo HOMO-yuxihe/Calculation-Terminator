@@ -26,7 +26,7 @@ def latex2svg(tex:str,font_size=12):
     return result.decode('utf-8')
 
 def expr2latex(expr:str):
-    expression=sympy.parse_expr(expr)
+    expression=sympy.parse_expr(expr,evaluate=False)
     return sympy.latex(expression,mode='plain')
 
 if __name__ == '__main__':
