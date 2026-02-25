@@ -2,7 +2,7 @@ import sys,time
 sys.path.append('src')
 from keyword import iskeyword
 from PyQt5.QtWidgets import (
-    QApplication,QLabel,QMainWindow,QTabWidget,
+    QApplication, QFrame,QLabel,QMainWindow,QTabWidget,
     QWidget,QVBoxLayout,QHBoxLayout,QTextEdit,
     QPushButton,QAction,QScrollArea,QLineEdit,
     QShortcut,QInputDialog,QListView,QMenuBar,
@@ -54,9 +54,70 @@ class OutputWindow(Subwindow):
     
     def view(self):
         content=self.display.toPlainText()
-        disp=LatexDisplay(expr2latex(content))
+        disp=LatexOutput(content)
         disp.show()
         self.par.windows.append(disp)
+
+class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
+    class SingleSolve(QFrame):
+        class OneSolve(QWidget):
+            def __init__(self,par,var:str,val:str):
+                super().__init__()
+                print(var,val)
+                self.main_layout=QHBoxLayout()
+                self.setLayout(self.main_layout)
+                self.var=QLabel(f'{var}=',font=font1)
+                self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:par.windows.append(LatexOutput(self.val.text())))],val,font=font2)
+                self.val.setCursorPosition(0)
+                self.main_layout.addWidget(self.var)
+                self.main_layout.addWidget(self.val,stretch=1)
+
+        def __init__(self,par,content:Dict[str,str]):
+            super().__init__()
+            self.setObjectName('SingleSolve')
+            self.main_layout=QVBoxLayout()
+            self.setLayout(self.main_layout)
+
+            for i,j in content.items():
+                self.main_layout.addWidget(self.OneSolve(par,i,j))
+            self.setStyleSheet('''
+                QFrame#SingleSolve {
+                    border: 1px solid #cccccc;
+                    border-radius: 6px;
+                    padding: 8px;
+                }
+                QFrame#SingleSolve > QWidget {
+                    border: none;
+                }
+            ''')
+
+    def __init__(self,parent,content:List[Dict[str,str]]):
+        super().__init__(parent)
+        self.setWindowTitle('计算结果')
+        self.resize(600,400)
+        self.setMinimumSize(400,200)
+        self.par=parent
+
+        self.central=QWidget()
+        self.main_layout=QVBoxLayout()
+        self.scroll_area=QScrollArea()
+        self.scroll_layout=QVBoxLayout()
+        self.display=QWidget()
+
+        self.central.setLayout(self.main_layout)
+        self.main_layout.addWidget(self.scroll_area)
+        self.scroll_layout.setAlignment(Qt.AlignTop)
+        self.display.setLayout(self.scroll_layout)
+        self.scroll_area.setWidgetResizable(1)
+        self.scroll_area.setWidget(self.display)
+
+        print(content)
+        for i in content:
+            self.scroll_layout.addWidget(self.SingleSolve(self,i))
+
+        self.setCentralWidget(self.central)
+        self.central.setLayout(self.main_layout)
+        self.show()
 
 class VariableModifier(QDialog):
 
@@ -228,7 +289,7 @@ class MainWindow(WithSubwindow):
         self.calc_layout=QVBoxLayout()
         self.calcTab.setLayout(self.calc_layout)
         self.calc_inputTip=QLabel('输入表达式',font=font1,alignment=Qt.AlignCenter)
-        self.calc_input=MTextEdit(font=font2,menus=[QAction('预览',triggered=lambda:self.createSubwindow(LatexDisplay(expr2latex(self.calc_input.toPlainText()))))])
+        self.calc_input=MTextEdit(font=font2,menus=[QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:self.windows.append(LatexOutput(self.calc_input.toPlainText())))])
         self.calc_layout.addWidget(self.calc_inputTip)
         self.calc_layout.addWidget(self.calc_input)
 
@@ -247,7 +308,8 @@ class MainWindow(WithSubwindow):
         self.eqal_layout=QVBoxLayout()
         self.eqalTab.setLayout(self.eqal_layout)
         self.eqal_inputTip=QLabel('输入方程',font=font1,alignment=Qt.AlignCenter)
-        self.eqal_input=MultiMLineEdit(font=font2,menus=[QAction('预览',triggered=lambda:self.createSubwindow(LatexDisplay(expr2latex('\n'.join(i.text() for i in self.eqal_input.lines)))))])
+        self.eqal_input=MultiMLineEdit(font=font2,menus=[('预览','Ctrl+Alt+V',lambda i:self.windows.append(LatexOutput(i.text())))])
+        # self.eqal_input=MultiLineEdit(font=font2)
         self.eqal_calc=QPushButton('求解',font=font1)
         self.eqal_calc.clicked.connect(self.solve)
         self.eqal_layout.addWidget(self.eqal_inputTip)
@@ -258,7 +320,7 @@ class MainWindow(WithSubwindow):
         self.deqal_layout=QVBoxLayout()
         self.deqalTab.setLayout(self.deqal_layout)
         self.deqal_inputTip=QLabel('输入微分方程',font=font1,alignment=Qt.AlignCenter)
-        self.deqal_input=MultiMLineEdit(font=font2,menus=[QAction('预览',triggered=lambda:self.createSubwindow(LatexDisplay(expr2latex('\n'.join(i.text() for i in self.deqal_input.lines)))))])
+        self.deqal_input=MultiMLineEdit(menus=[('预览','Ctrl+Alt+V',lambda i:self.windows.append(LatexOutput(i.text())))],font=font2)
         self.deqal_calc=QPushButton('求解',font=font1)
         self.deqal_calc.clicked.connect(self.dsolve)
         self.deqal_layout.addWidget(self.deqal_inputTip)
@@ -269,9 +331,9 @@ class MainWindow(WithSubwindow):
         self.lagrange_layout=QVBoxLayout()
         self.lagrangeTab.setLayout(self.lagrange_layout)
         self.lagrange_limitsTip=QLabel('约束条件',font=font1,alignment=Qt.AlignCenter)
-        self.lagrange_limitsInput=MultiMLineEdit(font=font2,menus=[QAction('预览',triggered=lambda:self.createSubwindow(LatexDisplay(expr2latex('\n'.join(i.text() for i in self.lagrange_limitsInput.lines)))))])
+        self.lagrange_limitsInput=MultiMLineEdit(font=font2,menus=[('预览','Ctrl+Alt+V',lambda i:self.windows.append(LatexOutput(i.text())))])
         self.lagrange_targetTip=QLabel('目标函数',font=font1,alignment=Qt.AlignCenter)
-        self.lagrange_targetInput=MTextEdit(font=font2,menus=[QAction('预览',triggered=lambda:self.createSubwindow(LatexDisplay(expr2latex(self.lagrange_targetInput.toPlainText()))))])
+        self.lagrange_targetInput=MTextEdit(font=font2,menus=[QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:self.windows.append(LatexOutput(self.lagrange_targetInput.toPlainText())))])
         self.lagrange_calc=QPushButton('开始计算',font=font1)
         self.lagrange_calc.pressed.connect(self.lagrange)
 
@@ -309,7 +371,8 @@ class MainWindow(WithSubwindow):
         target,ok=VariableSelector.get(self,usedVariables)
         if not ok:return
         res=solver.send(target)
-        self.windows.append(OutputWindow(self,str(res)))
+        print(res)
+        self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
     
     def dsolve(self):
         exprs=[j for i in self.deqal_input.lines if (j:=i.text().strip())]

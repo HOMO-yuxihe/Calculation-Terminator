@@ -7,6 +7,7 @@ plt.rcParams['mathtext.fontset']='cm'
 plt.rcParams['text.latex.preamble']=r'\usepackage{bm}'  # 或 \usepackage{amsmath}
 plt.rcParams['svg.fonttype']='path'
 def latex2svg(tex:str,font_size=12):
+    if not tex.strip():return ''
     text=f'${tex}$'
     plt.rcParams['font.size']=font_size
     fig,ax = plt.subplots()
@@ -26,6 +27,7 @@ def latex2svg(tex:str,font_size=12):
     return result.decode('utf-8')
 
 def expr2latex(expr:str):
+    if not expr.strip():return ''
     expression=sympy.parse_expr(expr,evaluate=False)
     return sympy.latex(expression,mode='plain')
 
