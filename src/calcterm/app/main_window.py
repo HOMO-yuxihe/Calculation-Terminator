@@ -1,4 +1,5 @@
 import sys,time
+from typing_extensions import ReadOnly
 sys.path.append('src')
 from keyword import iskeyword
 from PyQt5.QtWidgets import (
@@ -65,9 +66,10 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
                 super().__init__()
                 print(var,val)
                 self.main_layout=QHBoxLayout()
+                self.main_layout.setContentsMargins(0,0,0,0)
                 self.setLayout(self.main_layout)
-                self.var=QLabel(f'{var}=',font=font1)
-                self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:par.windows.append(LatexOutput(self.val.text())))],val,font=font2)
+                self.var=QLabel(f'{var}=',font=font2)
+                self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:par.windows.append(LatexOutput(self.val.text())))],val,font=font2,readOnly=1)
                 self.val.setCursorPosition(0)
                 self.main_layout.addWidget(self.var)
                 self.main_layout.addWidget(self.val,stretch=1)
@@ -75,7 +77,7 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         def __init__(self,par,content:Dict[str,str]):
             super().__init__()
             self.setObjectName('SingleSolve')
-            self.main_layout=QVBoxLayout()
+            self.main_layout=QVBoxLayout(spacing=1)
             self.setLayout(self.main_layout)
 
             for i,j in content.items():
@@ -85,9 +87,6 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
                     border: 1px solid #cccccc;
                     border-radius: 6px;
                     padding: 8px;
-                }
-                QFrame#SingleSolve > QWidget {
-                    border: none;
                 }
             ''')
 
@@ -112,8 +111,11 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         self.scroll_area.setWidget(self.display)
 
         print(content)
-        for i in content:
-            self.scroll_layout.addWidget(self.SingleSolve(self,i))
+        if not content:
+            self.scroll_layout.addWidget(QLabel('方程无解',font=QFont('Microsoft Yahei',40),alignment=Qt.AlignCenter))
+        else:
+            for i in content:
+                self.scroll_layout.addWidget(self.SingleSolve(self,i))
 
         self.setCentralWidget(self.central)
         self.central.setLayout(self.main_layout)
