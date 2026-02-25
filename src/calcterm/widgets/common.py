@@ -108,8 +108,6 @@ class MultiLineEdit(QWidget):
 
     def add(self,obj:QWidget):
         item = self._LineEdit(self)
-        shortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace),item,
-                             context=Qt.WidgetShortcut,activated=lambda:self.delete(item))
         index = self.content_layout.indexOf(obj) + 1
         self.lines.insert(index, item)
         self.content_layout.insertWidget(index, item)
