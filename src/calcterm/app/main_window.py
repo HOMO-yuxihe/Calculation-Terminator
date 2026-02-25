@@ -412,7 +412,7 @@ class MainWindow(WithSubwindow):
         target,ok=VariableSelector.get(self,usedFunctions)
         if not ok:return
         res=solver.send(target)
-        self.windows.append(OutputWindow(self,str(res)))
+        self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
         
 
     def lagrange(self):
@@ -424,7 +424,7 @@ class MainWindow(WithSubwindow):
         if isinstance(res:=parser.lagrange(limits,target,self.variables,self.functions),str):
             self.windows.append(OutputWindow(self,res))
         else:
-            self.windows.append(OutputWindow(self,'\n'.join(map(str,res))))
+            self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
         
     
     def openVariableManager(self):
