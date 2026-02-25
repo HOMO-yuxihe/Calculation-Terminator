@@ -1,5 +1,5 @@
 import sys
-from typing import List
+from typing import List,Tuple
 from PyQt5.QtWidgets import (QHBoxLayout,QListView,QMessageBox,
                              QPushButton, QTextEdit,QAction,QLineEdit,
                              QWidget,QScrollArea,QVBoxLayout,QShortcut,
@@ -20,6 +20,10 @@ class WithSubwindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.windows=[]
+    
+    def createSubwindow(self,window,*args,**kw):
+        self.windows.append(window)
+        window.show()
 
     def closeSubwindow(self,target:QMainWindow):
         self.windows.remove(target)
@@ -32,6 +36,20 @@ class WithSubwindow(QMainWindow):
 
 
 class MTextEdit(QTextEdit):
+    def __init__(self,menus=[],*args,**kw):
+        super().__init__(*args,**kw)
+        self.menu=menus
+    
+    def setMenu(self,menus:List[QAction]=[]):
+        self.menu=menus
+    
+    def contextMenuEvent(self, event):
+        menu = self.createStandardContextMenu()
+        menu.addSeparator()
+        for i in self.menu:menu.addAction(i)
+        menu.exec(event.globalPos())
+
+class MLineEdit(QLineEdit):
     def __init__(self,menus=[],*args,**kw):
         super().__init__(*args,**kw)
         self.menu=menus
@@ -96,9 +114,7 @@ class MultiLineEdit(QWidget):
         self.main_layout.addWidget(self.scroll_area, stretch=1)
 
     def add(self,obj:QWidget):
-        item = self._LineEdit(self,font=self.font())
-        shortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace),item,
-                             context=Qt.WidgetShortcut,activated=lambda:self.delete(item))
+        item = self._LineEdit(self)
         index = self.content_layout.indexOf(obj) + 1
         self.lines.insert(index, item)
         self.content_layout.insertWidget(index, item)
@@ -131,6 +147,51 @@ class MultiLineEdit(QWidget):
         if index<len(self.lines)-1:
             self.lines[index+1].setFocus()
             self.lines[index+1].setCursorPosition(len(self.lines[index+1].text()))
+
+class MultiMLineEdit(MultiLineEdit):
+    class _LineEdit(MLineEdit):
+        def __init__(self,parent,canBeDeleted=True,menus=[],*args,**kw):
+            super().__init__(menus,*args,**kw)
+            self.par=parent
+            self.canBeDeleted=canBeDeleted
+        
+        def keyPressEvent(self, event:QKeyEvent):
+            if event.key()==Qt.Key.Key_Backspace and self.canBeDeleted:
+                if not self.text():
+                    self.par.deleteCur(self)
+                else:
+                    return super().keyPressEvent(event)
+            elif event.key()==Qt.Key_Return:
+                self.par.add(self)
+            elif event.key()==Qt.Key_Up:
+                self.par.up(self)
+            elif event.key()==Qt.Key_Down:
+                self.par.down(self)
+            elif event.key()==Qt.Key_Delete:
+                index=self.par.content_layout.indexOf(self)
+                curpos=self.cursorPosition()
+                if index<len(self.par.lines)-1 and curpos==len(self.text()):
+                    nxt=self.par.lines[index+1]
+                    if not nxt.text().strip():
+                        self.par.deleteCur(nxt)
+                    else:return super().keyPressEvent(event)
+                else:return super().keyPressEvent(event)
+            else:
+                return super().keyPressEvent(event)
+        
+        def contextMenuEvent(self, event):
+            return super().contextMenuEvent(event)
+    def __init__(self,menus=[],*args,**kw):
+        super().__init__(*args,**kw)
+        self.menus=menus
+        self.lines[0].menu=[QAction(i,shortcut=j,triggered=lambda:k(self.lines[0])) for i,j,k in self.menus]
+    
+    def add(self,obj:QWidget):
+        item = self._LineEdit(self,menus=[QAction(i,shortcut=j,triggered=lambda:k(item)) for i,j,k in self.menus])
+        index = self.content_layout.indexOf(obj) + 1
+        self.lines.insert(index, item)
+        self.content_layout.insertWidget(index, item)
+        item.setFocus()
 
 class MultiLineSelector(QWidget):
     def __init__(self,vars:List[str],*args,**kw):
