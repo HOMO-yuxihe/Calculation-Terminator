@@ -29,9 +29,9 @@ class OutputWindow(Subwindow):
         self.setMinimumSize(400,200)
         self.par=parent
 
-        simplifyAction=QAction('化简 (Ctrl+S)',shortcut='Ctrl+S',triggered=self.simplify)
-        evalAction=QAction('求值 (Ctrl+E)',shortcut='Ctrl+E',triggered=self.eval)
-        viewAction=QAction('预览 (Ctrl+V)',shortcut='Ctrl+V',triggered=self.view)
+        simplifyAction=QAction('化简',shortcut='Ctrl+S',triggered=self.simplify)
+        evalAction=QAction('求值',shortcut='Ctrl+E',triggered=self.eval)
+        viewAction=QAction('预览',shortcut='Ctrl+Alt+V',triggered=self.view)
         self.closeShortcut=QShortcut(QKeySequence('Escape'),self,activated=self.close)
         self.display=MTextEdit([simplifyAction,evalAction,viewAction],content,font=font2,readOnly=1)
 
