@@ -283,7 +283,7 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
     yield res
 
 def is_assumption(assump:str):
-    return (assump in defined_facts) or (assump in VALID_FUNCTION_ASSUMPTIONS)
+    return assump in defined_facts
 
 def is_function_assumption(assump:str):
     return assump in VALID_FUNCTION_ASSUMPTIONS
