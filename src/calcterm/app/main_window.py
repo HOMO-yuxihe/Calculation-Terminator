@@ -345,10 +345,14 @@ class MainWindow(WithSubwindow):
         self.deqalTab.setLayout(self.deqal_layout)
         self.deqal_inputTip=QLabel('输入微分方程',font=font1,alignment=Qt.AlignCenter)
         self.deqal_input=MultiMLineEdit(menus=[('预览','Ctrl+Alt+V',lambda i:self.windows.append(LatexOutput(i.text())))],font=font2)
+        self.deqal_ics_inputTip=QLabel('微分方程的初始条件',font=font1,alignment=Qt.AlignCenter)
+        self.deqal_ics_input=MultiMLineEdit(menus=[('预览','Ctrl+Alt+V',lambda i:self.windows.append(LatexOutput(i.text())))],font=font2)
         self.deqal_calc=QPushButton('求解',font=font1)
         self.deqal_calc.clicked.connect(self.dsolve)
         self.deqal_layout.addWidget(self.deqal_inputTip)
         self.deqal_layout.addWidget(self.deqal_input)
+        self.deqal_layout.addWidget(self.deqal_ics_inputTip)
+        self.deqal_layout.addWidget(self.deqal_ics_input)
         self.deqal_layout.addWidget(self.deqal_calc)
 
         #拉格朗日部分
@@ -400,14 +404,18 @@ class MainWindow(WithSubwindow):
     
     def dsolve(self):
         exprs=[j for i in self.deqal_input.lines if (j:=i.text().strip())]
+        ics=[j for i in self.deqal_ics_input.lines if (j:=i.text().strip())]
         if not exprs:
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
-        solver=parser.dsolver(exprs,self.variables,self.functions)
+        solver=parser.dsolver(exprs,self.variables,self.functions,ics)
         try:
             usedFunctions=solver.__next__()
         except StopIteration as e:
             QMessageBox.warning(self,'错误',str(e))
+            return
+        except ValueError as e:
+            QMessageBox.critical(self,'错误',str(e))
             return
         target,ok=VariableSelector.get(self,usedFunctions)
         if not ok:return

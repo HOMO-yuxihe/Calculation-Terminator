@@ -1,7 +1,7 @@
 import sympy,keyword
 from sympy.core.function import AppliedUndef
 from sympy.core.assumptions_generated import defined_facts
-from typing import Dict,List,TypedDict
+from typing import Dict,List,Union
 from .struct_template import *
 
 glob={
@@ -237,13 +237,23 @@ def smartsolver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]
                 for i in list(sympy.nonlinsolve(exprs,*target))]
     yield result
 
-def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction]):
+def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction],ics:List[str]=[]):
     tracer=SymbolTracer()
     local=localDictGen(vars,functions)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
     exprs:List[sympy.Expr]=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    icss={}
+    for i in ics:
+        if not (i:=i.strip()):
+            continue
+        if i.count('=')!=1:
+            raise ValueError("每个初始条件只能有1个等号")
+        lhs,rhs=map(lambda x:sympy.parse_expr(x,local_dict=local,global_dict=glob),i.split('='))
+        if not isinstance(lhs,(AppliedUndef,sympy.Derivative,sympy.Subs)):
+            raise ValueError('必须使用形如f(x)=y的形式定义初始条件')
+        icss[lhs]=rhs
 
     ERR_result=errMsgGen(tracer)
     if ERR_result:
@@ -254,8 +264,23 @@ def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction]
     tg=yield list(map(str,functions))
     target=[functions[i] for i in range(len(functions)) if tg[i]]
 
-    result=sympy.dsolve(exprs,target)
-    yield result
+    if len(exprs)==1 and len(target)==1:
+        exprs=exprs[0]
+        target=target[0]
+
+    result:Union[List[sympy.Eq],List[List[sympy.Eq]]]=sympy.dsolve(exprs,target,ics=icss)
+    res:List[Dict[AppliedUndef,sympy.Expr]]=...
+    ress:List[List[sympy.Expr]]=...
+    if isinstance(result,sympy.Eq):
+        res=[{result.lhs:result.rhs}]
+        ress=[[result.lhs-result.rhs]]
+    elif isinstance(result[0],sympy.Eq):
+        res=[{i.lhs:i.rhs for i in result}]
+        if len(res[0])!=len(result):
+            res=[{i.lhs:i.rhs} for i in result]
+    else:
+        res=[{j.lhs:j.rhs for j in i} for i in result]
+    yield res
 
 def is_assumption(assump:str):
     return (assump in defined_facts) or (assump in VALID_FUNCTION_ASSUMPTIONS)
