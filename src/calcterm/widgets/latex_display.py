@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QByteArray, Qt
 from PyQt5.QtGui import QPainter,QWheelEvent
 from PyQt5.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
+from PyQt5.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
 from PyQt5.QtSvg import QGraphicsSvgItem, QSvgRenderer
 import sys
 sys.path.append('src')
@@ -102,5 +103,10 @@ class LatexOutput(WithSubwindow):
 if __name__ == '__main__':
     app=QApplication(sys.argv)
     display=LatexOutput(r'\frac{1}{2}\int_a^b f(x)dx')
+    #         return super().wheelEvent(event)
+
+if __name__ == '__main__':
+    app=QApplication(sys.argv)
+    display=LatexDisplay(r'\frac{1}{2}\int_a^b f(x)dx')
     display.show()
     sys.exit(app.exec_())

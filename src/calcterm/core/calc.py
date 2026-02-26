@@ -91,11 +91,11 @@ class SymbolTracer():
 #         local[id]=sympy.Symbol(name)
 #     return local
 
-def localDictGen(vars:List[Variable],funcs:List[UndefinedFunction]):# -> dict:
+def localDictGen(namespace:Namespace):# -> dict:
     local={}
-    for i in vars:
+    for i in namespace['variables']:
         local[i['id']]=sympy.Symbol(i['name'],**i['assumptions'])
-    for i in funcs:
+    for i in namespace['functions']:
         local[i['id']]=sympy.Function(i['name'],**i['assumptions'])
     return local
 
@@ -131,7 +131,7 @@ def parse(exp:str,vars:Dict[str,str]={}):
         return e
     return str(result).replace('log','ln')
 
-def calc(exp:str,vars:List[Variable],funcs:List[UndefinedFunction],ifeval:bool=False,digit=15) -> str:
+def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
     '''
     parse2:解析Sympy表达式
     
@@ -148,7 +148,7 @@ def calc(exp:str,vars:List[Variable],funcs:List[UndefinedFunction],ifeval:bool=F
     :rtype: str
     '''
     tracer=SymbolTracer()
-    local=localDictGen(vars,funcs)
+    local=localDictGen(namespace)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
@@ -164,10 +164,10 @@ def calc(exp:str,vars:List[Variable],funcs:List[UndefinedFunction],ifeval:bool=F
     
     return str(result).replace('log','ln')
 
-def lagrange(lm:List[str],tg:str,vars:List[Variable],funcs:List[UndefinedFunction]):
+def lagrange(lm:List[str],tg:str,namespace:Namespace):
     lambdas=[sympy.Symbol(f'λ_{i}',real=1) for i in range(1,len(lm)+1)]
     tracer=SymbolTracer()
-    local=localDictGen(vars,funcs)
+    local=localDictGen(namespace)
     variables=list(local.values())+lambdas
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
@@ -194,9 +194,9 @@ def lagrange(lm:List[str],tg:str,vars:List[Variable],funcs:List[UndefinedFunctio
         i['result']=res
     return solves
 
-def solver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]):
+def solver(expr:List[str],namespace:Namespace):
     tracer=SymbolTracer()
-    local=localDictGen(vars,funcs)
+    local=localDictGen(namespace)
     local['Symbol']=tracer.Symbol5
     local['Function']=tracer.Function
 
@@ -214,9 +214,9 @@ def solver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]):
     result=sympy.solve(exprs,*target,dict=True)
     yield result
 
-def smartsolver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]):
+def smartsolver(expr:List[str],namespace:Namespace):
     tracer=SymbolTracer()
-    local=localDictGen(vars,funcs)
+    local=localDictGen(namespace)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 
@@ -237,9 +237,9 @@ def smartsolver(expr:List[str],vars:List[Variable],funcs:List[UndefinedFunction]
                 for i in list(sympy.nonlinsolve(exprs,*target))]
     yield result
 
-def dsolver(expr:List[str],vars:List[Variable],functions:List[UndefinedFunction],ics:List[str]=[]):
+def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
     tracer=SymbolTracer()
-    local=localDictGen(vars,functions)
+    local=localDictGen(namespace)
     local['Symbol']=tracer.Symbol
     local['Function']=tracer.Function
 

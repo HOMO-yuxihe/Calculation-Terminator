@@ -13,14 +13,9 @@ from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
 from calcterm.widgets.common import *
 from calcterm.widgets.latex_display import *
+from calcterm.app.config import *
+from calcterm.app.namespacemgmt import *
 from typing import List,Dict,Union
-
-font1=QFont()
-font1.setFamily('Microsoft Yahei'),font1.setPointSize(12)
-font2=QFont()
-font2.setFamily('Consolas'),font2.setPointSize(18)
-fontdefault=QFont()
-fontdefault.setFamily('Microsoft Yahei'),fontdefault.setPointSize(9)
 
 class OutputWindow(Subwindow):
     def __init__(self,parent,content):
@@ -121,89 +116,6 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         self.central.setLayout(self.main_layout)
         self.show()
 
-class VariableModifier(QDialog):
-
-    def __init__(self,parent,variable:parser.Variable={'id':'','name':'','assumptions':{}},variableList=[]):
-        super().__init__(parent=parent)
-        self.varIds=[i['id'] for i in variableList]
-        self.setWindowTitle('修改变量')
-        # self.setMinimumSize(200,100)
-        self.setFont(font1)
-        self.setSizePolicy(0,0)
-
-        self.mainLayout=QVBoxLayout()
-        self.setLayout(self.mainLayout)
-        self.idLayout=QHBoxLayout()
-        self.nameLayout=QHBoxLayout()
-        self.assumpLayout=QVBoxLayout()
-        self.exitLayout=QHBoxLayout()
-        self.mainLayout.addLayout(self.idLayout)
-        self.mainLayout.addLayout(self.nameLayout)
-        self.mainLayout.addLayout(self.assumpLayout)
-        self.mainLayout.addLayout(self.exitLayout)
-
-        self.idTip=QLabel('变量标识符:')
-        self.id=QLineEdit(variable['id'])
-        self.srcid=variable['id']
-        self.idLayout.addWidget(self.idTip)
-        self.idLayout.addWidget(self.id)
-        self.nameTip=QLabel('变量显示名:')
-        self.name=QLineEdit(variable['name'])
-        self.nameLayout.addWidget(self.nameTip)
-        self.nameLayout.addWidget(self.name)
-        self.addBtn=QPushButton('完成')
-        self.addBtn.clicked.connect(self.mod)
-        self.cancelBtn=QPushButton('取消')
-        self.cancelBtn.clicked.connect(self.reject)
-        self.exitLayout.addWidget(self.addBtn)
-        self.exitLayout.addWidget(self.cancelBtn)
-
-        self.assumpTip=QLabel('变量断言:')
-        self.assumpInput=MultiLineEdit(content=[f'{i}:{j}' for i,j in variable['assumptions'].items()],font=QFont('Consolas',14))
-        self.assumpInput.content_layout.setContentsMargins(0,0,0,0)
-        self.assumpInput.scroll_area.setStyleSheet('QScrollArea {border:none}')
-        self.assumpLayout.addWidget(self.assumpTip)
-        self.assumpLayout.addWidget(self.assumpInput)
-        self.res={}
-    
-    def mod(self):
-        if not self.id.text().strip():
-            QMessageBox.warning(self,'错误','标识符不能为空')
-            return
-        if not self.name.text().strip():
-            self.name.setText(self.id.text())
-            return
-        if iskeyword(self.id.text().strip()):
-            QMessageBox.warning(self,'错误','标识符不能包含关键字')
-            return
-        if not self.id.text().strip().isidentifier():
-            QMessageBox.warning(self,'错误','标识符不符合命名格式')
-            return
-        if self.id.text() in self.varIds and self.id.text() != self.srcid:
-            QMessageBox.warning(self,'错误','标识符已存在')
-            return
-        assump={}
-        for i in self.assumpInput.lines:
-            if (text:=i.text().strip()):
-                if ':' not in text:
-                    QMessageBox.warning(self,'错误','断言格式错误')
-                    return
-                key,value=text.split(':',1)
-                if parser.is_assumption(key.strip()):
-                    assump[key.strip()]=value.strip()
-                else:
-                    QMessageBox.warning(self,'错误',f'断言"{key.strip()}"不合法')
-                    return
-        self.res:parser.Variable={'id':self.id.text(),'name':self.name.text(),'assumptions':assump}
-        self.accept()
-    
-    @staticmethod
-    def get(parent,variable:parser.Variable={'id':'','name':'','assumptions':{}},variableList=[]):
-        dialog=VariableModifier(parent,variable,variableList)
-        result=dialog.exec_()
-        return dialog.res,(result==QDialog.Accepted)
-
-
 class VariableManager(GenericModifier):
     def __init__(self,parent,variables):
         super().__init__(parent,'变量管理器',(font1,font2),VariableModifier,variables)
@@ -236,6 +148,12 @@ class FunctionManager(GenericModifier):
         var=self.variables[row]
         self.info.setPlainText(f"标识符: {var['id']}\n显示名: {var['name']}\n断言: {'无' if not var['assumptions'].items() else ','.join(f'{i}:{j}' for i,j in var['assumptions'].items())}")  
     
+    def view(self):
+        content=self.display.toPlainText()
+        disp=LatexDisplay(expr2latex(content))
+        disp.show()
+        self.par.windows.append(disp)
+  
 class VariableSelector(QDialog):
     def __init__(self,parent,vars:List[str]):
         super().__init__(parent=parent)
@@ -280,19 +198,11 @@ class MainWindow(WithSubwindow):
 
         self.menubar=QMenuBar(self,font=fontdefault)
         self.setMenuBar(self.menubar)
-        self.variables=[]
-        self.functions=[]
-        self.variablemanager=VariableManager(self,self.variables)
-        self.functionmanager=FunctionManager(self,self.functions)
-        self.windows.append(self.variablemanager)
-        self.varMgmt=QAction('变量管理',self.menubar,triggered=self.openVariableManager)
-        self.varMgmtopened=0
-        self.funcMgmt=QAction('函数管理',self.menubar,triggered=self.openFunctionManager)
-        self.funcMgmtopened=0
-        self.namespaceMgmt=QMenu('命名空间管理',self.menubar)
-        self.namespaceMgmt.addAction(self.varMgmt)
-        self.namespaceMgmt.addAction(self.funcMgmt)
-        self.menubar.addMenu(self.namespaceMgmt)
+        self.namespace={'variables':[],'functions':[],'lambdas':[]}
+        self.namespacemanager=NamespaceManager(self,self.namespace)
+        self.windows.append(self.namespacemanager)
+        self.namespaceMgmt=QAction('命名空间管理',self.menubar,triggered=self.openNamespaceManager)
+        self.menubar.addAction(self.namespaceMgmt)
 
         #标签页部分
         self.Tab_font=QFont('Microsoft Yahei',10)
@@ -376,12 +286,12 @@ class MainWindow(WithSubwindow):
         if not expr.strip():
             QMessageBox.warning(self,'错误','表达式不能为空')
             return
-        result=parser.calc(expr,self.variables,self.functions)
+        result=parser.calc(expr,self.namespace)
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
         print(self.windows)
-        print(self.variables)
+        print(self.namespace['variables'])
 
         # sys.exit(0)
     
@@ -390,7 +300,7 @@ class MainWindow(WithSubwindow):
         if not exprs:
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
-        solver=parser.smartsolver(exprs,self.variables,self.functions)
+        solver=parser.smartsolver(exprs,self.namespace)
         try:
             usedVariables=solver.__next__()
         except StopIteration as e:
@@ -408,7 +318,7 @@ class MainWindow(WithSubwindow):
         if not exprs:
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
-        solver=parser.dsolver(exprs,self.variables,self.functions,ics)
+        solver=parser.dsolver(exprs,self.namespace)
         try:
             usedFunctions=solver.__next__()
         except StopIteration as e:
@@ -429,34 +339,23 @@ class MainWindow(WithSubwindow):
         if not target.strip():
             QMessageBox.warning(self,'错误','目标函数不能为空')
             return
-        if isinstance(res:=parser.lagrange(limits,target,self.variables,self.functions),str):
+        if isinstance(res:=parser.lagrange(limits,target,self.namespace),str):
             self.windows.append(OutputWindow(self,res))
         else:
             self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
         
     
-    def openVariableManager(self):
-        if self.variablemanager in self.windows:
-            self.variablemanager.show()
-            self.variablemanager.raise_()
-            self.variablemanager.activateWindow()
-            self.variablemanager.setFocus()
+    def openNamespaceManager(self):
+        if self.namespacemanager in self.windows:
+            self.namespacemanager.show()
+            self.namespacemanager.raise_()
+            self.namespacemanager.activateWindow()
+            self.namespacemanager.setFocus()
         else:
-            self.variablemanager=VariableManager(self,self.variables)
-            self.variablemanager.show()
-            self.windows.append(self.variablemanager)
+            self.namespacemanager=NamespaceManager(self,self.variables)
+            self.namespacemanager.show()
+            self.windows.append(self.namespacemanager)
 
-    def openFunctionManager(self):
-        if self.functionmanager in self.windows:
-            self.functionmanager.show()
-            self.functionmanager.raise_()
-            self.functionmanager.activateWindow()
-            self.functionmanager.setFocus()
-        else:
-            self.functionmanager=FunctionManager(self,self.functions)
-            self.functionmanager.show()
-            self.windows.append(self.functionmanager)
-    
     def closeEvent(self, event):
         super().closeEvent(event)
         self.close()
