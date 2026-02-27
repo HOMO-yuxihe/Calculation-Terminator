@@ -45,8 +45,8 @@ glob={
 
     'Integer':sympy.Integer,
     'Float':sympy.Rational,
-    # 'Function':sympy.Function,
-    # 'Symbol':sympy.Symbol,
+    'Function':sympy.Function,
+    'Symbol':sympy.Symbol,
 
     'solve':sympy.solve
 }
@@ -60,20 +60,20 @@ VALID_FUNCTION_ASSUMPTIONS = {
         'commutative'
 }
 
-class SymbolTracer():
-    def __init__(self):
-        self.symbols=set()
-        self.functions=set()
+# class SymbolTracer():
+#     def __init__(self):
+#         self.symbols=set()
+#         self.functions=set()
 
-    def Symbol(self,name:str,**assumptions):
-        '''sympy.Symbol() function with tracing'''
-        self.symbols.add(name)
-        return sympy.Symbol(name,**assumptions)
+#     def Symbol(self,name:str,**assumptions):
+#         '''sympy.Symbol() function with tracing'''
+#         self.symbols.add(name)
+#         return sympy.Symbol(name,**assumptions)
     
-    def Function(self,name:str,**assumptions):
-        '''sympy.Function() function with tracing'''
-        self.functions.add(name)
-        return sympy.Function(name,**assumptions)
+#     def Function(self,name:str,**assumptions):
+#         '''sympy.Function() function with tracing'''
+#         self.functions.add(name)
+#         return sympy.Function(name,**assumptions)
 
 # def localDictGen(vars:Dict[str,str]):
 #     '''
@@ -99,13 +99,13 @@ def localDictGen(namespace:Namespace):# -> dict:
         local[i['id']]=sympy.Function(i['name'],**i['assumptions'])
     return local
 
-def errMsgGen(tracer:SymbolTracer):
-    ERR_result=[]
-    if symbols:=sorted(list(tracer.symbols)):
-        ERR_result.append(f'未定义变量:{",".join(symbols)}')
-    if functions:=sorted(list(tracer.functions)):
-        ERR_result.append(f'未知函数:{",".join(functions)}')
-    return '错误：'+'; '.join(ERR_result) if ERR_result else None
+# def errMsgGen(tracer:SymbolTracer):
+#     ERR_result=[]
+#     if symbols:=sorted(list(tracer.symbols)):
+#         ERR_result.append(f'未定义变量:{",".join(symbols)}')
+#     if functions:=sorted(list(tracer.functions)):
+#         ERR_result.append(f'未知函数:{",".join(functions)}')
+#     return '错误：'+'; '.join(ERR_result) if ERR_result else None
 
 def evalf(exp:str,digit:int):
     result=sympy.parse_expr(f'simplify({exp})')
@@ -147,16 +147,16 @@ def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
     :return: 表达式结果
     :rtype: str
     '''
-    tracer=SymbolTracer()
+    # tracer=SymbolTracer()
     local=localDictGen(namespace)
-    local['Symbol']=tracer.Symbol
-    local['Function']=tracer.Function
+    # local['Symbol']=tracer.Symbol
+    # local['Function']=tracer.Function
 
     try:
         result=sympy.parse_expr(exp,local_dict=local,global_dict=glob)
-        ERR_result=errMsgGen(tracer)
-        if ERR_result:
-            return ERR_result
+        # ERR_result=errMsgGen(tracer)
+        # if ERR_result:
+        #     return ERR_result
         if ifeval:
             result=sympy.N(result,digit)
     except Exception as e:
@@ -166,18 +166,18 @@ def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
 
 def lagrange(lm:List[str],tg:str,namespace:Namespace):
     lambdas=[sympy.Symbol(f'λ_{i}',real=1) for i in range(1,len(lm)+1)]
-    tracer=SymbolTracer()
+    # tracer=SymbolTracer()
     local=localDictGen(namespace)
     variables=list(local.values())+lambdas
-    local['Symbol']=tracer.Symbol
-    local['Function']=tracer.Function
+    # local['Symbol']=tracer.Symbol
+    # local['Function']=tracer.Function
     
     lm_exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
     tg_expr=sympy.parse_expr(tg,global_dict=glob,local_dict=local)
 
-    ERR_result=errMsgGen(tracer)
-    if ERR_result:
-        return ERR_result
+    # ERR_result=errMsgGen(tracer)
+    # if ERR_result:
+    #     return ERR_result
 
     Lag=tg_expr
     for i,lamda in enumerate(lambdas):
@@ -195,16 +195,16 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace):
     return solves
 
 def solver(expr:List[str],namespace:Namespace):
-    tracer=SymbolTracer()
+    # tracer=SymbolTracer()
     local=localDictGen(namespace)
-    local['Symbol']=tracer.Symbol5
-    local['Function']=tracer.Function
+    # local['Symbol']=tracer.Symbol
+    # local['Function']=tracer.Function
 
     exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
 
-    ERR_result=errMsgGen(tracer)
-    if ERR_result:
-        return ERR_result
+    # ERR_result=errMsgGen(tracer)
+    # if ERR_result:
+    #     return ERR_result
 
     symbols=list(set(j for i in exprs for j in i.free_symbols))
     symbols.sort(key=lambda i:i.name)
@@ -215,16 +215,16 @@ def solver(expr:List[str],namespace:Namespace):
     yield result
 
 def smartsolver(expr:List[str],namespace:Namespace):
-    tracer=SymbolTracer()
+    # tracer=SymbolTracer()
     local=localDictGen(namespace)
-    local['Symbol']=tracer.Symbol
-    local['Function']=tracer.Function
+    # local['Symbol']=tracer.Symbol
+    # local['Function']=tracer.Function
 
     exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
 
-    ERR_result=errMsgGen(tracer)
-    if ERR_result:
-        return ERR_result
+    # ERR_result=errMsgGen(tracer)
+    # if ERR_result:
+    #     return ERR_result
 
     symbols=list(set(j for i in exprs for j in i.free_symbols))
     symbols.sort(key=lambda i:i.name)
@@ -238,10 +238,10 @@ def smartsolver(expr:List[str],namespace:Namespace):
     yield result
 
 def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
-    tracer=SymbolTracer()
+    # tracer=SymbolTracer()
     local=localDictGen(namespace)
-    local['Symbol']=tracer.Symbol
-    local['Function']=tracer.Function
+    # local['Symbol']=tracer.Symbol
+    # local['Function']=tracer.Function
 
     exprs:List[sympy.Expr]=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
     icss={}
@@ -255,9 +255,9 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
             raise ValueError('必须使用形如f(x)=y的形式定义初始条件')
         icss[lhs]=rhs
 
-    ERR_result=errMsgGen(tracer)
-    if ERR_result:
-        return ERR_result
+    # ERR_result=errMsgGen(tracer)
+    # if ERR_result:
+    #     return ERR_result
 
     functions=list(set(j for i in exprs for j in i.atoms(AppliedUndef)))
     functions.sort(key=lambda i:i.__repr__())
@@ -270,10 +270,8 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
 
     result:Union[List[sympy.Eq],List[List[sympy.Eq]]]=sympy.dsolve(exprs,target,ics=icss)
     res:List[Dict[AppliedUndef,sympy.Expr]]=...
-    ress:List[List[sympy.Expr]]=...
     if isinstance(result,sympy.Eq):
         res=[{result.lhs:result.rhs}]
-        ress=[[result.lhs-result.rhs]]
     elif isinstance(result[0],sympy.Eq):
         res=[{i.lhs:i.rhs for i in result}]
         if len(res[0])!=len(result):
