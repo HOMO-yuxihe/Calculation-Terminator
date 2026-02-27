@@ -352,7 +352,7 @@ class MainWindow(WithSubwindow):
             self.namespacemanager.activateWindow()
             self.namespacemanager.setFocus()
         else:
-            self.namespacemanager=NamespaceManager(self,self.variables)
+            self.namespacemanager=NamespaceManager(self,self.namespace)
             self.namespacemanager.show()
             self.windows.append(self.namespacemanager)
 

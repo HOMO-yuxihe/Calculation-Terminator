@@ -245,6 +245,8 @@ class NamespaceManager(Subwindow):
         self.functionsEditLayout.addWidget(self.functionsEdit)
         self.functionsEditLayout.addWidget(self.functionsDelete)
         self.functionsEditLayout.addWidget(self.functionsInfo)
+
+        self.refresh()
     
     def varAdd(self):
         res,ok=VariableModifier.get(self,variableList=self.namespace['variables'])
