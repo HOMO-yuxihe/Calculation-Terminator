@@ -168,12 +168,12 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace):
     lambdas=[sympy.Symbol(f'λ_{i}',real=1) for i in range(1,len(lm)+1)]
     # tracer=SymbolTracer()
     local=localDictGen(namespace)
-    variables=list(local.values())+lambdas
     # local['Symbol']=tracer.Symbol
     # local['Function']=tracer.Function
     
-    lm_exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
-    tg_expr=sympy.parse_expr(tg,global_dict=glob,local_dict=local)
+    lm_exprs:List[sympy.Expr]=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
+    tg_expr:List[sympy.Expr]=sympy.parse_expr(tg,global_dict=glob,local_dict=local)
+    variables=list(set([j for i in lm_exprs+[tg_expr] for j in i.free_symbols]))+lambdas
 
     # ERR_result=errMsgGen(tracer)
     # if ERR_result:
