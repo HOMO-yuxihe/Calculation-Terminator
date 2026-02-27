@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
 from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
 import calcterm.core.calc as parser
+import calcterm.core.exception_parser as err
 from calcterm.widgets.common import *
 from calcterm.widgets.latex_display import *
 from calcterm.app.config import *
@@ -286,7 +287,10 @@ class MainWindow(WithSubwindow):
         if not expr.strip():
             QMessageBox.warning(self,'错误','表达式不能为空')
             return
-        result=parser.calc(expr,self.namespace)
+        try:
+            result=parser.calc(expr,self.namespace)
+        except SyntaxError:
+            QMessageBox.warning(self,'错误',err.syntaxErrTranslate)
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
@@ -306,6 +310,9 @@ class MainWindow(WithSubwindow):
         except StopIteration as e:
             QMessageBox.warning(self,'错误',str(e))
             return
+        except SyntaxError as e:
+            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
+            return
         target,ok=VariableSelector.get(self,usedVariables)
         if not ok:return
         res=solver.send(target)
@@ -318,14 +325,17 @@ class MainWindow(WithSubwindow):
         if not exprs:
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
-        solver=parser.dsolver(exprs,self.namespace)
+        solver=parser.dsolver(exprs,self.namespace,ics)
         try:
             usedFunctions=solver.__next__()
         except StopIteration as e:
             QMessageBox.warning(self,'错误',str(e))
             return
+        except SyntaxError as e:
+            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
+            return
         except ValueError as e:
-            QMessageBox.critical(self,'错误',str(e))
+            QMessageBox.warning(self,'错误',str(e))
             return
         target,ok=VariableSelector.get(self,usedFunctions)
         if not ok:return
@@ -339,7 +349,12 @@ class MainWindow(WithSubwindow):
         if not target.strip():
             QMessageBox.warning(self,'错误','目标函数不能为空')
             return
-        if isinstance(res:=parser.lagrange(limits,target,self.namespace),str):
+        try:
+            res=parser.lagrange(limits,target,self.namespace)
+        except SyntaxError as e:
+            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
+            return
+        if isinstance(res,str):
             self.windows.append(OutputWindow(self,res))
         else:
             self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
