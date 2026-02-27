@@ -211,3 +211,6 @@ __marimo__/
 
 #Code Counter
 .VSCodeCounter/
+
+#idea
+.idea/
