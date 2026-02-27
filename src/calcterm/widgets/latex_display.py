@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QByteArray, Qt
-from PyQt5.QtGui import QPainter,QWheelEvent
+from PyQt5.QtGui import QFont, QPainter,QWheelEvent
 from PyQt5.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
 from PyQt5.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
 from PyQt5.QtSvg import QGraphicsSvgItem, QSvgRenderer
@@ -8,6 +8,7 @@ sys.path.append('src')
 
 from calcterm.core.latex import *
 from calcterm.widgets.common import *
+import calcterm.core.exception_parser as err
 
 class LatexDisplay(QWidget):
     class _GraphicsView(QGraphicsView):
@@ -68,7 +69,10 @@ class LatexDisplay(QWidget):
     def setLatex(self,tex:str,font_size=None):
         if font_size is not None:self.font_size=font_size
         self.tex=tex
-        svg_data=latex2svg(tex,self.font_size)
+        try:
+            svg_data=latex2svg(tex,self.font_size)
+        except Exception as e:
+            QMessageBox.warning(self,'错误',str(e))
         svg_bytes=QByteArray(svg_data.encode('utf-8'))
         self.renderer.load(svg_bytes)
         
@@ -86,14 +90,22 @@ class LatexDisplay(QWidget):
     #     else:
     #         return super().wheelEvent(event)\
 
-class LatexOutput(WithSubwindow):
+class LatexOutput(QMainWindow):
     def __init__(self,expr:str):
         super().__init__()
         self.setWindowTitle('Latex预览')
 
         self.central=QWidget()
         self.main_layout=QVBoxLayout()
-        self.display=LatexDisplay(expr2latex(expr)) if expr.strip() else (QLabel('预览内容为空'))
+        try:
+            print(expr.strip())
+            self.display=LatexDisplay(expr2latex(exp)) if (exp:=expr.strip()) else (QLabel('预览内容为空'))
+        except SyntaxError as e:
+            QMessageBox.warning(self,'错误',f'表达式有语法错误，请更正后再试。\n错误详情:{err.syntaxErrTranslate(e)}')
+            self.destroy()
+            return
+        except Exception as e:
+            self.display=QLabel(f'发生错误:{e}',font=QFont('Microsoft Yahei',40))
         self.setCentralWidget(self.central)
         self.central.setLayout(self.main_layout)
         self.main_layout.addWidget(self.display)
