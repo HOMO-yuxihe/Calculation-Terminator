@@ -170,7 +170,7 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace):
     # local['Function']=tracer.Function
     
     lm_exprs:List[sympy.Expr]=[parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
-    tg_expr:List[sympy.Expr]=parse_expr(tg,global_dict=glob,local_dict=local)
+    tg_expr:sympy.Expr=parse_expr(tg,global_dict=glob,local_dict=local)
     variables=list(set([j for i in lm_exprs+[tg_expr] for j in i.free_symbols]))+lambdas
 
     # ERR_result=errMsgGen(tracer)
