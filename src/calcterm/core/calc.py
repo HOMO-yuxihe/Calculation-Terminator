@@ -3,6 +3,7 @@ from sympy.core.function import AppliedUndef
 from sympy.core.assumptions_generated import defined_facts
 from typing import Dict,List,Union
 from .struct_template import *
+from .exception_parser import parse_expr
 
 glob={
     '__builtins__':{},
@@ -108,11 +109,11 @@ def localDictGen(namespace:Namespace):# -> dict:
 #     return '错误：'+'; '.join(ERR_result) if ERR_result else None
 
 def evalf(exp:str,digit:int):
-    result=sympy.parse_expr(f'simplify({exp})')
+    result=parse_expr(f'simplify({exp})')
     return str(result.evalf(digit))
 
 def simplify(exp:str):
-    return sympy.parse_expr(f'simplify({exp})')
+    return parse_expr(f'simplify({exp})')
 
 def parse(exp:str,vars:Dict[str,str]={}):
     '''
@@ -153,7 +154,7 @@ def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
     # local['Function']=tracer.Function
 
     try:
-        result=sympy.parse_expr(exp,local_dict=local,global_dict=glob)
+        result=parse_expr(exp,local_dict=local,global_dict=glob)
         # ERR_result=errMsgGen(tracer)
         # if ERR_result:
         #     return ERR_result
@@ -171,8 +172,8 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace):
     # local['Symbol']=tracer.Symbol
     # local['Function']=tracer.Function
     
-    lm_exprs:List[sympy.Expr]=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
-    tg_expr:List[sympy.Expr]=sympy.parse_expr(tg,global_dict=glob,local_dict=local)
+    lm_exprs:List[sympy.Expr]=[parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
+    tg_expr:List[sympy.Expr]=parse_expr(tg,global_dict=glob,local_dict=local)
     variables=list(set([j for i in lm_exprs+[tg_expr] for j in i.free_symbols]))+lambdas
 
     # ERR_result=errMsgGen(tracer)
@@ -200,7 +201,7 @@ def solver(expr:List[str],namespace:Namespace):
     # local['Symbol']=tracer.Symbol
     # local['Function']=tracer.Function
 
-    exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
 
     # ERR_result=errMsgGen(tracer)
     # if ERR_result:
@@ -220,7 +221,7 @@ def smartsolver(expr:List[str],namespace:Namespace):
     # local['Symbol']=tracer.Symbol
     # local['Function']=tracer.Function
 
-    exprs=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
 
     # ERR_result=errMsgGen(tracer)
     # if ERR_result:
@@ -243,14 +244,14 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
     # local['Symbol']=tracer.Symbol
     # local['Function']=tracer.Function
 
-    exprs:List[sympy.Expr]=[sympy.parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    exprs:List[sympy.Expr]=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
     icss={}
     for i in ics:
         if not (i:=i.strip()):
             continue
         if i.count('=')!=1:
             raise ValueError("每个初始条件只能有1个等号")
-        lhs,rhs=map(lambda x:sympy.parse_expr(x,local_dict=local,global_dict=glob),i.split('='))
+        lhs,rhs=map(lambda x:parse_expr(x,local_dict=local,global_dict=glob),i.split('='))
         if not isinstance(lhs,(AppliedUndef,sympy.Derivative,sympy.Subs)):
             raise ValueError('必须使用形如f(x)=y的形式定义初始条件')
         icss[lhs]=rhs
