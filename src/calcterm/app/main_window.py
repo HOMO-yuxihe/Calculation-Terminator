@@ -289,8 +289,9 @@ class MainWindow(WithSubwindow):
             return
         try:
             result=parser.calc(expr,self.namespace)
-        except SyntaxError:
-            QMessageBox.warning(self,'错误',err.syntaxErrTranslate)
+        except SyntaxError as e:
+            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
+            return
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))

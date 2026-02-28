@@ -153,15 +153,12 @@ def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
     # local['Symbol']=tracer.Symbol
     # local['Function']=tracer.Function
 
-    try:
-        result=parse_expr(exp,local_dict=local,global_dict=glob)
-        # ERR_result=errMsgGen(tracer)
-        # if ERR_result:
-        #     return ERR_result
-        if ifeval:
-            result=sympy.N(result,digit)
-    except Exception as e:
-        result=repr(e)
+    result=parse_expr(exp,local_dict=local,global_dict=glob)
+    # ERR_result=errMsgGen(tracer)
+    # if ERR_result:
+    #     return ERR_result
+    if ifeval:
+        result=sympy.N(result,digit)
     
     return str(result).replace('log','ln')
 
