@@ -42,7 +42,7 @@ class OutputWindow(Subwindow):
     def simplify(self):
         content=self.display.toPlainText()
         result=parser.simplify(content)
-        self.display.setPlainText(str(result))
+        self.display.setPlainText(result)
     
     def eval(self):
         content=self.display.toPlainText()
@@ -60,7 +60,6 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         class OneSolve(QWidget):
             def __init__(self,par,var:str,val:str):
                 super().__init__()
-                print(var,val)
                 self.main_layout=QHBoxLayout()
                 self.main_layout.setContentsMargins(0,0,0,0)
                 self.setLayout(self.main_layout)
@@ -106,7 +105,6 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         self.scroll_area.setWidgetResizable(1)
         self.scroll_area.setWidget(self.display)
 
-        print(content)
         if not content:
             self.scroll_layout.addWidget(QLabel('方程无解',font=QFont('Microsoft Yahei',40),alignment=Qt.AlignCenter))
         else:
@@ -295,11 +293,7 @@ class MainWindow(WithSubwindow):
         self.windows.append(OutputWindow(self,result))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
-        print(self.windows)
-        print(self.namespace['variables'])
 
-        # sys.exit(0)
-    
     def solve(self):
         exprs=[j for i in self.eqal_input.lines if (j:=i.text().strip())]
         if not exprs:
@@ -317,8 +311,7 @@ class MainWindow(WithSubwindow):
         target,ok=VariableSelector.get(self,usedVariables)
         if not ok:return
         res=solver.send(target)
-        print(res)
-        self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
+        self.windows.append(MultiSolvesOutputWindow(self,res))
     
     def dsolve(self):
         exprs=[j for i in self.deqal_input.lines if (j:=i.text().strip())]
@@ -341,7 +334,7 @@ class MainWindow(WithSubwindow):
         target,ok=VariableSelector.get(self,usedFunctions)
         if not ok:return
         res=solver.send(target)
-        self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
+        self.windows.append(MultiSolvesOutputWindow(self,res))
         
 
     def lagrange(self):
@@ -358,7 +351,7 @@ class MainWindow(WithSubwindow):
         if isinstance(res,str):
             self.windows.append(OutputWindow(self,res))
         else:
-            self.windows.append(MultiSolvesOutputWindow(self,[{str(j):str(k) for j,k in i.items()} for i in res]))
+            self.windows.append(MultiSolvesOutputWindow(self,res))
         
     
     def openNamespaceManager(self):

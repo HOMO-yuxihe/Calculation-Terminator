@@ -2,7 +2,7 @@ from threading import local
 from typing import Dict
 import sympy
 
-def parse_expr(expr:str,local_dict:Dict={},global_dict:Dict={},evaluate:bool=True):
+def parse_expr(expr:str,local_dict:Dict=None,global_dict:Dict=None,evaluate:bool=True):
     compile(expr,'Expression','eval')
     res=sympy.parse_expr(expr,local_dict=local_dict,global_dict=global_dict,evaluate=evaluate)
     return res

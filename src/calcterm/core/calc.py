@@ -109,11 +109,11 @@ def localDictGen(namespace:Namespace):# -> dict:
 #     return '错误：'+'; '.join(ERR_result) if ERR_result else None
 
 def evalf(exp:str,digit:int):
-    result=parse_expr(f'simplify({exp})')
+    result=sympy.simplify(parse_expr(exp))
     return str(result.evalf(digit))
 
 def simplify(exp:str):
-    return parse_expr(f'simplify({exp})')
+    return str(sympy.simplify(parse_expr(exp)))
 
 def parse(exp:str,vars:Dict[str,str]={}):
     '''
@@ -180,17 +180,16 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace):
     Lag=tg_expr
     for i,lamda in enumerate(lambdas):
         Lag+=lamda*lm_exprs[i]
-    print(Lag,variables)
     expr=[sympy.diff(Lag,i) for i in variables]
-    print(expr)
     solves=sympy.solve(expr)
     if type(solves)==dict:solves=[solves]
-    print(solves)
+    result=[]
     for i in solves:
-        res=sympy.simplify(Lag.subs(i))
-        print(res)
-        i['result']=res
-    return solves
+        solve=sympy.simplify(Lag.subs(i))
+        i={str(a):str(b) for a,b in i.items()}
+        i['result']=str(solve)
+        result.append(i)
+    return result
 
 def solver(expr:List[str],namespace:Namespace):
     # tracer=SymbolTracer()
@@ -233,7 +232,7 @@ def smartsolver(expr:List[str],namespace:Namespace):
     if result==[]:
         result=[{symbol:i[index] for index,symbol in enumerate(target)}
                 for i in list(sympy.nonlinsolve(exprs,*target))]
-    yield result
+    yield [{str(j):str(k) for j,k in i.items()} for i in result]
 
 def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
     # tracer=SymbolTracer()
@@ -276,7 +275,7 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
             res=[{i.lhs:i.rhs} for i in result]
     else:
         res=[{j.lhs:j.rhs for j in i} for i in result]
-    yield res
+    yield [{str(j):str(k) for j,k in i.items()} for i in res]
 
 def is_assumption(assump:str):
     return assump in defined_facts
