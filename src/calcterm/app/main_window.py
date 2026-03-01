@@ -282,15 +282,13 @@ class MainWindow(WithSubwindow):
 
     def calc(self):
         expr=self.calc_input.toPlainText()
-        if not expr.strip():
-            QMessageBox.warning(self,'错误','表达式不能为空')
+        result=parser.calc(expr,self.namespace)
+
+        if result[1]!=None:
+            QMessageBox.warning(self,*result[1])
             return
-        try:
-            result=parser.calc(expr,self.namespace)
-        except SyntaxError as e:
-            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
-            return
-        self.windows.append(OutputWindow(self,result))
+
+        self.windows.append(OutputWindow(self,result[0]))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
 
@@ -303,14 +301,19 @@ class MainWindow(WithSubwindow):
         try:
             usedVariables=solver.__next__()
         except StopIteration as e:
-            QMessageBox.warning(self,'错误',str(e))
+            err=e.args[0][1]
+            QMessageBox.warning(self,*err)
             return
-        except SyntaxError as e:
-            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
-            return
+
         target,ok=VariableSelector.get(self,usedVariables)
         if not ok:return
-        res=solver.send(target)
+
+        try:
+            res=solver.send(target)
+        except StopIteration as e:
+            err=e.args[0][1]
+            QMessageBox.warning(self,*err)
+            return
         self.windows.append(MultiSolvesOutputWindow(self,res))
     
     def dsolve(self):
@@ -320,38 +323,36 @@ class MainWindow(WithSubwindow):
             QMessageBox.warning(self,'错误','方程组不能为空')
             return
         solver=parser.dsolver(exprs,self.namespace,ics)
+
         try:
             usedFunctions=solver.__next__()
         except StopIteration as e:
-            QMessageBox.warning(self,'错误',str(e))
+            err=e.args[0][1]
+            QMessageBox.warning(self,*err)
             return
-        except SyntaxError as e:
-            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
-            return
-        except ValueError as e:
-            QMessageBox.warning(self,'错误',str(e))
-            return
+
         target,ok=VariableSelector.get(self,usedFunctions)
         if not ok:return
-        res=solver.send(target)
+
+        try:
+            res=solver.send(target)
+        except StopIteration as e:
+            err=e.args[0][1]
+            QMessageBox.warning(self,*err)
+            return
+
         self.windows.append(MultiSolvesOutputWindow(self,res))
         
 
     def lagrange(self):
         limits=[j for i in self.lagrange_limitsInput.lines if (j:=i.text().strip())]
         target=self.lagrange_targetInput.toPlainText()
-        if not target.strip():
-            QMessageBox.warning(self,'错误','目标函数不能为空')
-            return
-        try:
-            res=parser.lagrange(limits,target,self.namespace)
-        except SyntaxError as e:
-            QMessageBox.warning(self,'错误',err.syntaxErrTranslate(e))
-            return
-        if isinstance(res,str):
-            self.windows.append(OutputWindow(self,res))
-        else:
-            self.windows.append(MultiSolvesOutputWindow(self,res))
+        res=parser.lagrange(limits,target,self.namespace)
+        
+        if res[1]!=None:
+            QMessageBox.warning(self,*res[1])
+
+        self.windows.append(MultiSolvesOutputWindow(self,res[0]))
         
     
     def openNamespaceManager(self):

@@ -1,9 +1,9 @@
 import sympy,keyword
 from sympy.core.function import AppliedUndef
 from sympy.core.assumptions_generated import defined_facts
-from typing import Dict,List,Union
+from typing import Dict,List, Tuple,Union
 from .struct_template import *
-from .exception_parser import parse_expr
+from .exception_parser import parse_expr,syntaxErrTranslate
 
 glob={
     '__builtins__':{},
@@ -61,21 +61,6 @@ VALID_FUNCTION_ASSUMPTIONS = {
         'commutative'
 }
 
-# class SymbolTracer():
-#     def __init__(self):
-#         self.symbols=set()
-#         self.functions=set()
-
-#     def Symbol(self,name:str,**assumptions):
-#         '''sympy.Symbol() function with tracing'''
-#         self.symbols.add(name)
-#         return sympy.Symbol(name,**assumptions)
-    
-#     def Function(self,name:str,**assumptions):
-#         '''sympy.Function() function with tracing'''
-#         self.functions.add(name)
-#         return sympy.Function(name,**assumptions)
-
 # def localDictGen(vars:Dict[str,str]):
 #     '''
 #     localDictGen:根据变量标识符+显示名称生成sympy局部变量命名空间字典
@@ -100,14 +85,6 @@ def localDictGen(namespace:Namespace):# -> dict:
         local[i['id']]=sympy.Function(i['name'],**i['assumptions'])
     return local
 
-# def errMsgGen(tracer:SymbolTracer):
-#     ERR_result=[]
-#     if symbols:=sorted(list(tracer.symbols)):
-#         ERR_result.append(f'未定义变量:{",".join(symbols)}')
-#     if functions:=sorted(list(tracer.functions)):
-#         ERR_result.append(f'未知函数:{",".join(functions)}')
-#     return '错误：'+'; '.join(ERR_result) if ERR_result else None
-
 def evalf(exp:str,digit:int):
     result=sympy.simplify(parse_expr(exp))
     return str(result.evalf(digit))
@@ -115,24 +92,7 @@ def evalf(exp:str,digit:int):
 def simplify(exp:str):
     return str(sympy.simplify(parse_expr(exp)))
 
-def parse(exp:str,vars:Dict[str,str]={}):
-    '''
-    parse:Parse and evaluate expressions written in string.
-    "parse2" function is recommended for parsing sympy expressions.
-    
-    :param exp: Expressions written in string
-    :type exp: str
-    :param vars: Defined variables
-    :type vars: dict
-    '''
-    local=localDictGen(vars)
-    try:
-        result=eval(exp,glob,local)
-    except Exception as e:
-        return e
-    return str(result).replace('log','ln')
-
-def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
+def calc(exp:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,str]]]]:
     '''
     parse2:解析Sympy表达式
     
@@ -148,116 +108,144 @@ def calc(exp:str,namespace:Namespace,ifeval:bool=False,digit=15) -> str:
     :return: 表达式结果
     :rtype: str
     '''
-    # tracer=SymbolTracer()
+    result=[None,None]
+    if not exp.strip():
+        return [None,('错误','表达式不能为空')]
     local=localDictGen(namespace)
-    # local['Symbol']=tracer.Symbol
-    # local['Function']=tracer.Function
-
-    result=parse_expr(exp,local_dict=local,global_dict=glob)
-    # ERR_result=errMsgGen(tracer)
-    # if ERR_result:
-    #     return ERR_result
-    if ifeval:
-        result=sympy.N(result,digit)
+    try:
+        result[0]=str(parse_expr(exp,local_dict=local,global_dict=glob)).replace('log','ln')
+    except SyntaxError as e:
+        result[1]=('语法错误',syntaxErrTranslate(e))
+    except Exception as e:
+        result[1]=('错误',repr(e))
     
-    return str(result).replace('log','ln')
+    return result
 
-def lagrange(lm:List[str],tg:str,namespace:Namespace):
+def lagrange(lm:List[str],tg:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,str]]]]:
+    if not tg.strip():
+        return [None,('错误','目标函数不能为空')]
     lambdas=[sympy.Symbol(f'λ_{i}',real=1) for i in range(1,len(lm)+1)]
-    # tracer=SymbolTracer()
     local=localDictGen(namespace)
-    # local['Symbol']=tracer.Symbol
-    # local['Function']=tracer.Function
+    result=[None,None]
     
-    lm_exprs:List[sympy.Expr]=[parse_expr(i,global_dict=glob,local_dict=local) for i in lm]
-    tg_expr:sympy.Expr=parse_expr(tg,global_dict=glob,local_dict=local)
-    variables=list(set([j for i in lm_exprs+[tg_expr] for j in i.free_symbols]))+lambdas
+    lm_exprs:List[sympy.Expr]=[]
+    for i,j in enumerate(lm):
+        try:
+            lm_exprs.append(parse_expr(j,global_dict=glob,local_dict=local))
+        except SyntaxError as e:
+            result[1]=('语法错误',f'第{i+1}条约束条件存在语法错误:'+syntaxErrTranslate(e))
+            return result
+        except Exception as e:
+            result[1]=('错误',f'第{i+1}条约束条件解析错误:'+repr(e))
+            return result
 
-    # ERR_result=errMsgGen(tracer)
-    # if ERR_result:
-    #     return ERR_result
+    try:
+        tg_expr:sympy.Expr=parse_expr(tg,global_dict=glob,local_dict=local)
+    except SyntaxError as e:
+        result[1]=('语法错误','目标函数表达式存在语法错误'+syntaxErrTranslate(e))
+        return result
+    except Exception as e:
+        result[1]=('解析错误','目标函数表达式解析出错:'+repr(e))
+        return result
+
+    variables=list(set([j for i in lm_exprs+[tg_expr] for j in i.free_symbols]))+lambdas
 
     Lag=tg_expr
     for i,lamda in enumerate(lambdas):
         Lag+=lamda*lm_exprs[i]
     expr=[sympy.diff(Lag,i) for i in variables]
-    solves=sympy.solve(expr)
+    try:
+        solves=sympy.solve(expr)
+    except Exception as e:
+        result[1]=('求解错误','求解出错:'+repr(e))
+        return result
+
     if type(solves)==dict:solves=[solves]
-    result=[]
+    result[0]=[]
     for i in solves:
         solve=sympy.simplify(Lag.subs(i))
         i={str(a):str(b) for a,b in i.items()}
         i['result']=str(solve)
-        result.append(i)
+        result[0].append(i)
     return result
 
-def solver(expr:List[str],namespace:Namespace):
-    # tracer=SymbolTracer()
-    local=localDictGen(namespace)
-    # local['Symbol']=tracer.Symbol
-    # local['Function']=tracer.Function
-
-    exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
-
-    # ERR_result=errMsgGen(tracer)
-    # if ERR_result:
-    #     return ERR_result
-
-    symbols=list(set(j for i in exprs for j in i.free_symbols))
-    symbols.sort(key=lambda i:i.name)
-    tg=yield list(map(str,symbols))
-    target=[symbols[i] for i in range(len(symbols)) if tg[i]]
-
-    result=sympy.solve(exprs,*target,dict=True)
-    yield result
-
 def smartsolver(expr:List[str],namespace:Namespace):
-    # tracer=SymbolTracer()
+    if not expr:
+        return [None,('错误','待求解方程组为空')]
+    result=[None,None]
     local=localDictGen(namespace)
-    # local['Symbol']=tracer.Symbol
-    # local['Function']=tracer.Function
 
-    exprs=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
-
-    # ERR_result=errMsgGen(tracer)
-    # if ERR_result:
-    #     return ERR_result
+    exprs=[]
+    for i,j in enumerate(expr):
+        try:
+            exprs.append(parse_expr(j,global_dict=glob,local_dict=local))
+        except SyntaxError as e:
+            return [None,('语法错误',f'第{i+1}条表达式存在语法错误:'+syntaxErrTranslate(e))]
+        except Exception as e:
+            return [None,('解析错误',f'第{i+1}条表达式解析错误:'+repr(e))]
 
     symbols=list(set(j for i in exprs for j in i.free_symbols))
+    if not symbols:
+        return [None,('错误','没有待求解变量')]
     symbols.sort(key=lambda i:i.name)
     tg=yield list(map(str,symbols))
     target=[symbols[i] for i in range(len(symbols)) if tg[i]]
 
-    result=sympy.solve(exprs,*target,dict=True)
-    if result==[]:
-        result=[{symbol:i[index] for index,symbol in enumerate(target)}
+    nlsolve=lambda:[{symbol:i[index] for index,symbol in enumerate(target)}
                 for i in list(sympy.nonlinsolve(exprs,*target))]
-    yield [{str(j):str(k) for j,k in i.items()} for i in result]
+    try:
+        result=sympy.solve(exprs,*target,dict=True)
+    except NotImplementedError:
+        try:
+            result[0]=nlsolve()
+        except NotImplementedError:
+            return [None,('不支持','抱歉，程序暂不支持该方程组')]
+        except Exception as e:
+            return [None,('求解错误','方程组求解出错:'+repr(e))]
+    except Exception as e:
+        return [None,('求解错误','方程组求解出错:'+repr(e))]
+    if result[0]==[]:
+        result=nlsolve()
+    print(result)
+    yield [{str(j):str(k) for j,k in i.items()} for i in result[0]]
 
 def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
-    # tracer=SymbolTracer()
+    if not expr:
+        return [None,('错误','待求解方程组为空')]
     local=localDictGen(namespace)
-    # local['Symbol']=tracer.Symbol
-    # local['Function']=tracer.Function
 
-    exprs:List[sympy.Expr]=[parse_expr(i,global_dict=glob,local_dict=local) for i in expr]
+    exprs=[]
+    for i,j in enumerate(expr):
+        try:
+            exprs.append(parse_expr(j,global_dict=glob,local_dict=local))
+        except SyntaxError as e:
+            return [None,('语法错误',f'第{i+1}条表达式存在语法错误:'+syntaxErrTranslate(e))]
+        except Exception as e:
+            return [None,('解析错误',f'第{i+1}条表达式解析错误:'+repr(e))]
+
     icss={}
-    for i in ics:
-        if not (i:=i.strip()):
+    for i,j in enumerate(ics):
+        if not (j:=j.strip()):
             continue
-        if i.count('=')!=1:
-            raise ValueError("每个初始条件只能有1个等号")
-        lhs,rhs=map(lambda x:parse_expr(x,local_dict=local,global_dict=glob),i.split('='))
+        if (cnt:=j.count('='))!=1:
+            return [None,('格式错误',f'第{i+1}条初始条件有{cnt}个等号。\n每个初始条件必须有1个等号。')]
+
+        try:
+            lhs,rhs=map(lambda x:parse_expr(x,local_dict=local,global_dict=glob),j.split('='))
+        except SyntaxError as e:
+            return [None,('语法错误',f'第{i+1}条初始条件存在语法错误:'+syntaxErrTranslate(e))]
+        except Exception as e:
+            return [None,('解析错误',f'第{i+1}条初始条件解析错误:'+repr(e))]
+
         if not isinstance(lhs,(AppliedUndef,sympy.Derivative,sympy.Subs)):
-            raise ValueError('必须使用形如f(x)=y的形式定义初始条件')
+            return [None,('格式错误',f'第{i+1}条初始条件格式错误。\n必须使用形如f(x)=y的形式定义初始条件')]
         icss[lhs]=rhs
 
-    # ERR_result=errMsgGen(tracer)
-    # if ERR_result:
-    #     return ERR_result
-
     functions=list(set(j for i in exprs for j in i.atoms(AppliedUndef)))
+    if not functions:
+        return [None,('错误','没有待求解函数')]
     functions.sort(key=lambda i:i.__repr__())
+
     tg=yield list(map(str,functions))
     target=[functions[i] for i in range(len(functions)) if tg[i]]
 
@@ -265,7 +253,11 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
         exprs=exprs[0]
         target=target[0]
 
-    result:Union[List[sympy.Eq],List[List[sympy.Eq]]]=sympy.dsolve(exprs,target,ics=icss)
+    try:
+        result:Union[List[sympy.Eq],List[List[sympy.Eq]]]=sympy.dsolve(exprs,target,ics=icss)
+    except Exception as e:
+        return [None,('求解错误','方程组求解出错:'+repr(e))]
+
     res:List[Dict[AppliedUndef,sympy.Expr]]=...
     if isinstance(result,sympy.Eq):
         res=[{result.lhs:result.rhs}]
@@ -275,7 +267,7 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
             res=[{i.lhs:i.rhs} for i in result]
     else:
         res=[{j.lhs:j.rhs for j in i} for i in result]
-    yield [{str(j):str(k) for j,k in i.items()} for i in res]
+    yield [None,[{str(j):str(k) for j,k in i.items()} for i in res]]
 
 def is_assumption(assump:str):
     return assump in defined_facts
