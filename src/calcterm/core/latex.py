@@ -26,7 +26,7 @@ def remove_mul_1(node:sympy.Expr):
     else:
         try:
             return node.func(*new_args,evaluate=False)
-        except ValueError:
+        except TypeError:
             return node.func(*new_args)
 
 def latex2svg(tex:str,font_size=12):
