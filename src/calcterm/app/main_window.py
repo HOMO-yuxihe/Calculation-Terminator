@@ -357,6 +357,7 @@ class MainWindow(WithSubwindow):
     def openNamespaceManager(self):
         if self.namespacemanager in self.windows:
             self.namespacemanager.show()
+            self.namespacemanager.showNormal()
             self.namespacemanager.raise_()
             self.namespacemanager.activateWindow()
             self.namespacemanager.setFocus()
