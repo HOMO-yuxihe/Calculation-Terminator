@@ -105,7 +105,9 @@ class LatexOutput(QMainWindow):
             self.destroy()
             return
         except Exception as e:
-            self.display=QLabel(f'发生错误:{e}',font=QFont('Microsoft Yahei',40))
+            QMessageBox.warning(self,'错误',f'预览出错，错误详情:{e.__repr__()}')
+            self.destroy()
+            return
         self.setCentralWidget(self.central)
         self.central.setLayout(self.main_layout)
         self.main_layout.addWidget(self.display)
