@@ -3,6 +3,8 @@ from sympy.core.numbers import One
 import matplotlib.pyplot as plt
 from io import BytesIO
 
+from calcterm.core.exception_parser import parse_expr
+
 plt.rcParams['text.usetex']=False
 plt.rcParams['mathtext.fontset']='cm'
 plt.rcParams['text.latex.preamble']=r'\usepackage{bm}'  # 或 \usepackage{amsmath}
@@ -49,7 +51,7 @@ def latex2svg(tex:str,font_size=12):
 
 def expr2latex(expr:str):
     if not expr.strip():return ''
-    expression=remove_mul_1(sympy.parse_expr(expr,evaluate=False))
+    expression=remove_mul_1(parse_expr(expr,evaluate=False))
     return sympy.latex(expression,mode='plain')
 
 if __name__ == '__main__':
