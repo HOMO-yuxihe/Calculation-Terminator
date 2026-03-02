@@ -1,9 +1,24 @@
+import sys
+sys.path.append('src')
 import sympy
 from sympy.core.numbers import One
+from sympy.functions.combinatorial.factorials import factorial
 import matplotlib.pyplot as plt
 from io import BytesIO
 
 from calcterm.core.exception_parser import parse_expr
+from calcterm.core.calc import glob
+
+global_dict_default={}
+exec('from sympy import *',global_dict_default)
+
+preview_gdict_override={
+    'diff':sympy.Derivative,
+    'int':sympy.Integral,
+    'lim':sympy.Limit,
+    'sum':sympy.Sum,
+    'product':sympy.Product,
+}
 
 plt.rcParams['text.usetex']=False
 plt.rcParams['mathtext.fontset']='cm'
@@ -51,14 +66,20 @@ def latex2svg(tex:str,font_size=12):
 
 def expr2latex(expr:str):
     if not expr.strip():return ''
-    expression=remove_mul_1(parse_expr(expr,evaluate=False))
+    gd=global_dict_default.copy()
+    gd.update(glob)
+    gd.update(preview_gdict_override)
+    with sympy.evaluate(False):
+        expression=parse_expr(expr,global_dict=gd)
+    expression=remove_mul_1(expression)
+    print(expression)
     return sympy.latex(expression,mode='plain')
 
 if __name__ == '__main__':
     pass
     # text = r'$x^2+y^2=z^2$'
     # print(latex_formula2svg(text,font_size=12))
-    expr='2*4*6'
+    expr='factorial(5)*123*int(x**2+1)+diff(x**5)+sqrt(2)*5**(1/4)'
     tex=expr2latex(expr)
     print(tex)
     # print(latex2svg(tex))
