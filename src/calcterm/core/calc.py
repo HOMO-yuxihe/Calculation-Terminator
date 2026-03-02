@@ -21,7 +21,7 @@ glob={
     'lg':lambda x:sympy.log(x,10),
     'log':lambda x,base:sympy.log(x,base),
     'lim':sympy.limit,
-    'taylor':sympy.series,
+    'series':sympy.series,
     'sin':sympy.sin,
     'cos':sympy.cos,
     'tan':sympy.tan,
