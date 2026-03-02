@@ -38,6 +38,7 @@ glob={
     'lim':sympy.limit,
     'sum':sympy.summation,
     'product':sympy.product,
+    'factorial':sympy.factorial,
     'series':sympy.series,
 
     'LambertW':sympy.LambertW,
