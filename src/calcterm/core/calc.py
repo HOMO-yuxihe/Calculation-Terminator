@@ -14,14 +14,10 @@ glob={
     'logcombine':sympy.logcombine,
     'abs':sympy.Abs,
     'factor':sympy.factor,
-    'diff':sympy.diff,
-    'int':sympy.integrate,
     'sqrt':sympy.sqrt,
     'ln':lambda x:sympy.log(x),
     'lg':lambda x:sympy.log(x,10),
     'log':lambda x,base:sympy.log(x,base),
-    'lim':sympy.limit,
-    'series':sympy.series,
     'sin':sympy.sin,
     'cos':sympy.cos,
     'tan':sympy.tan,
@@ -36,6 +32,13 @@ glob={
     'arcsec':sympy.asec,
     'eval':sympy.N,
     'inf':sympy.oo,
+
+    'diff':sympy.diff,
+    'int':sympy.integrate,
+    'lim':sympy.limit,
+    'sum':sympy.summation,
+    'product':sympy.product,
+    'series':sympy.series,
 
     'LambertW':sympy.LambertW,
 
