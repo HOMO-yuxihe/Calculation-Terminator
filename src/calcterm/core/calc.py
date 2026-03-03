@@ -17,7 +17,7 @@ glob={
     'sqrt':sympy.sqrt,
     'ln':lambda x:sympy.log(x),
     'lg':lambda x:sympy.log(x,10),
-    'log':lambda x,base:sympy.log(x,base),
+    'log':sympy.log,
     'sin':sympy.sin,
     'cos':sympy.cos,
     'tan':sympy.tan,
@@ -117,7 +117,7 @@ def calc(exp:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,
         return [None,('错误','表达式不能为空')]
     local=localDictGen(namespace)
     try:
-        result[0]=str(parse_expr(exp,local_dict=local,global_dict=glob)).replace('log','ln')
+        result[0]=str(parse_expr(exp,local_dict=local,global_dict=glob))
     except SyntaxError as e:
         result[1]=('语法错误',syntaxErrTranslate(e))
     except Exception as e:
