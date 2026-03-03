@@ -198,7 +198,7 @@ def smartsolver(expr:List[str],namespace:Namespace):
     nlsolve=lambda:[{symbol:i[index] for index,symbol in enumerate(target)}
                 for i in list(sympy.nonlinsolve(exprs,*target))]
     try:
-        result=sympy.solve(exprs,*target,dict=True)
+        result[0]=sympy.solve(exprs,*target,dict=True)
     except NotImplementedError:
         try:
             result[0]=nlsolve()
@@ -209,7 +209,7 @@ def smartsolver(expr:List[str],namespace:Namespace):
     except Exception as e:
         return [None,('求解错误','方程组求解出错:'+repr(e))]
     if result[0]==[]:
-        result=nlsolve()
+        result[0]=nlsolve()
     print(result)
     yield [{str(j):str(k) for j,k in i.items()} for i in result[0]]
 
