@@ -1,5 +1,4 @@
 import sys,time
-from typing_extensions import ReadOnly
 sys.path.append('src')
 from keyword import iskeyword
 from PyQt5.QtWidgets import (
