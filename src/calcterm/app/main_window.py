@@ -105,11 +105,8 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         self.scroll_area.setWidgetResizable(1)
         self.scroll_area.setWidget(self.display)
 
-        if not content:
-            self.scroll_layout.addWidget(QLabel('方程无解',font=QFont('Microsoft Yahei',40),alignment=Qt.AlignCenter))
-        else:
-            for i in content:
-                self.scroll_layout.addWidget(self.SingleSolve(self,i))
+        for i in content:
+            self.scroll_layout.addWidget(self.SingleSolve(self,i))
 
         self.setCentralWidget(self.central)
         self.central.setLayout(self.main_layout)

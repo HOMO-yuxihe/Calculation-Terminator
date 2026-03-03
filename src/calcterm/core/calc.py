@@ -158,11 +158,16 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace)->Tuple[str,Tuple[str,Union
     for i,lamda in enumerate(lambdas):
         Lag+=lamda*lm_exprs[i]
     expr=[sympy.diff(Lag,i) for i in variables]
+
     try:
         solves=sympy.solve(expr)
+
     except Exception as e:
         result[1]=('求解错误','求解出错:'+repr(e))
         return result
+    
+    if result==[]:
+        return [None,('无法求解','抱歉，程序无法求得该表达式的最值，原因可能有:\n1.表达式严格单调;\n2.程序暂不支持求解由此表达式及约束条件构成的拉格朗日函数的驻点')]
 
     if type(solves)==dict:solves=[solves]
     result[0]=[]
@@ -210,7 +215,8 @@ def smartsolver(expr:List[str],namespace:Namespace):
         return [None,('求解错误','方程组求解出错:'+repr(e))]
     if result[0]==[]:
         result[0]=nlsolve()
-    print(result)
+    if result[0]==[]:
+        return [None,('无法求解','抱歉，程序无法求得该方程组的解，原因可能有:\n1.方程组本身无解;\n2.程序暂不支持求解此类方程组')]
     yield [{str(j):str(k) for j,k in i.items()} for i in result[0]]
 
 def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
@@ -261,6 +267,9 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
         result:Union[List[sympy.Eq],List[List[sympy.Eq]]]=sympy.dsolve(exprs,target,ics=icss)
     except Exception as e:
         return [None,('求解错误','方程组求解出错:'+repr(e))]
+    
+    if result==[]:
+        return [None,('无法求解','抱歉，程序无法求得该微分方程组的解，原因可能有:\n1.方程组本身无解;\n2.程序暂不支持求解此类方程组')]
 
     res:List[Dict[AppliedUndef,sympy.Expr]]=...
     if isinstance(result,sympy.Eq):
