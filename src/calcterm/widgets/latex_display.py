@@ -116,11 +116,6 @@ class LatexOutput(QMainWindow):
 
 if __name__ == '__main__':
     app=QApplication(sys.argv)
-    display=LatexOutput(r'\frac{1}{2}\int_a^b f(x)dx')
+    display=LatexOutput(r'5**(1/4)')
     #         return super().wheelEvent(event)
-
-if __name__ == '__main__':
-    app=QApplication(sys.argv)
-    display=LatexDisplay(r'\frac{1}{2}\int_a^b f(x)dx')
-    display.show()
-    sys.exit(app.exec_())
+    app.exec_()

@@ -44,7 +44,7 @@ def remove_mul_1(node:sympy.Expr):
         except TypeError:
             return node.func(*new_args)
 
-def latex2svg(tex:str,font_size=12):
+def latex2svg(tex:str,font_size=12,margin=0.2):
     if not tex.strip():return ''
     text=f'${tex}$'
     plt.rcParams['font.size']=font_size
@@ -53,10 +53,11 @@ def latex2svg(tex:str,font_size=12):
     ax.axis('off')
     fig.canvas.draw()
     bbox = txt.get_window_extent(renderer=fig.canvas.get_renderer())
+    # bbox = bbox.expanded(1 + margin, 1 + margin)
     fig.set_size_inches(bbox.width/fig.dpi,bbox.height/fig.dpi)
 
     bin=BytesIO()
-    fig.savefig(bin,format='svg',bbox_inches=None,pad_inches=0,transparent=True)
+    fig.savefig(bin,format='svg',bbox_inches='tight',pad_inches=0.05,transparent=True)
     bin.seek(0)
     result = bin.getvalue()
     bin.close()
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     pass
     # text = r'$x^2+y^2=z^2$'
     # print(latex_formula2svg(text,font_size=12))
-    expr='factorial(5)*123*int(x**2+1)+diff(x**5)+sqrt(2)*5**(1/4)'
+    expr='5**(1/4)'
     tex=expr2latex(expr)
     print(tex)
     # print(latex2svg(tex))
