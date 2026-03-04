@@ -205,12 +205,10 @@ class MainWindow(WithSubwindow):
         self.calcTab=QWidget(self.Tab)
         self.eqalTab=QWidget(self.Tab)
         self.deqalTab=QWidget(self.Tab)
-        self.ineqalTab=QWidget(self.Tab)
         self.lagrangeTab=QWidget(self.Tab)
         self.Tab.addTab(self.calcTab,'代数/数值计算')
         self.Tab.addTab(self.eqalTab,'方程求解')
         self.Tab.addTab(self.deqalTab,'微分方程求解')
-        self.Tab.addTab(self.ineqalTab,'不等式求解')
         self.Tab.addTab(self.lagrangeTab,'拉格朗日乘数')
         self.setCentralWidget(self.Tab)
 
