@@ -335,7 +335,7 @@ class MainWindow(WithSubwindow):
             QMessageBox.warning(self,*err)
             return
 
-        self.windows.append(MultiSolvesOutputWindow(self,res))
+        self.windows.append(MultiSolvesOutputWindow(self,res[0]))
         
 
     def lagrange(self):

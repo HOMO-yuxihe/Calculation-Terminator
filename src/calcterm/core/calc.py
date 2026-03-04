@@ -280,7 +280,7 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
             res=[{i.lhs:i.rhs} for i in result]
     else:
         res=[{j.lhs:j.rhs for j in i} for i in result]
-    yield [None,[{str(j):str(k) for j,k in i.items()} for i in res]]
+    yield [[{str(j):str(k) for j,k in i.items()} for i in res],None]
 
 def is_assumption(assump:str):
     return assump in defined_facts
