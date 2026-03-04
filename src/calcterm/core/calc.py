@@ -42,6 +42,11 @@ glob={
     'series':sympy.series,
 
     'LambertW':sympy.LambertW,
+    'erf':sympy.erf,
+    'erfc':sympy.erfc,
+    'gamma':sympy.gamma,
+    'beta':sympy.beta,
+    'zeta':sympy.zeta,
 
     'CRootOf':sympy.CRootOf,
     'ComplexRootOf':sympy.ComplexRootOf,
