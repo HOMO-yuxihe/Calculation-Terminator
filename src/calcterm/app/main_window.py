@@ -17,33 +17,33 @@ from calcterm.app.config import *
 from calcterm.app.namespacemgmt import *
 from typing import List,Dict,Union
 
+class EvaluateOutput(Subwindow):
+    def __init__(self,parent,src:str,result:str,srclatex:Union[None,str]=None):
+        super().__init__(parent)
+        self.setWindowTitle('求值结果')
+        self.latex=srclatex
+
+        self.central=QWidget()
+        self.setCentralWidget(self.central)
+        self.main_layout=QVBoxLayout()
+        self.central.setLayout(self.main_layout)
+
+        self.srcTip=QLabel('求值的表达式',font=font1)
+        self.src=MTextEdit([QAction('预览',shortcut='Ctrl+Alt+V',
+                triggered=lambda:self.par.windows.append((LatexOutput(srclatex,True))))] if self.latex else [],
+                src,font=font2,readOnly=1)
+        self.resultTip=QLabel('求值结果',font=font1)
+        print(type(result))
+        self.result=QTextEdit(result,font=font2,readOnly=1)
+
+        self.main_layout.addWidget(self.srcTip)
+        self.main_layout.addWidget(self.src)
+        self.main_layout.addWidget(self.resultTip)
+        self.main_layout.addWidget(self.result)
+
+        self.show()
+
 class OutputWindow(Subwindow):
-    class _EvaluateOutput(Subwindow):
-        def __init__(self,parent,src:str,result:str,srclatex:Union[None,str]=None):
-            super().__init__(parent)
-            self.setWindowTitle('求值结果')
-            self.latex=srclatex
-
-            self.central=QWidget()
-            self.setCentralWidget(self.central)
-            self.main_layout=QVBoxLayout()
-            self.central.setLayout(self.main_layout)
-
-            self.srcTip=QLabel('求值的表达式',font=font1)
-            self.src=MTextEdit([QAction('预览',shortcut='Ctrl+Alt+V',
-                    triggered=lambda:self.par.windows.append((LatexOutput(srclatex,True))))] if self.latex else [],
-                    src,font=font2,readOnly=1)
-            self.resultTip=QLabel('求值结果',font=font1)
-            print(type(result))
-            self.result=QTextEdit(result,font=font2,readOnly=1)
-
-            self.main_layout.addWidget(self.srcTip)
-            self.main_layout.addWidget(self.src)
-            self.main_layout.addWidget(self.resultTip)
-            self.main_layout.addWidget(self.result)
-
-            self.show()
-
     def __init__(self,parent,content,latex:Union[None,str]=None):
         super().__init__(parent)
         self.setWindowTitle('计算结果')
@@ -91,7 +91,7 @@ class OutputWindow(Subwindow):
         content=self.display.toPlainText()
         if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
             if (result:=parser.evalf(content,digit[0])) is not None:
-                self.windows.append(self._EvaluateOutput(self,content,result,self.latex))
+                self.windows.append(EvaluateOutput(self,content,result,self.latex))
             else:
                 QMessageBox.warning(self,'无法求值','该表达式无法进行求值，请确保:\n1.表达式不含变量\n2.表达式不含未定义函数')
 
@@ -101,14 +101,17 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
             def __init__(self,par,var:str,val:str,latex:Union[None,str]=None):
                 super().__init__()
                 self.latex=None
+                self.par=par
                 self.main_layout=QHBoxLayout()
                 self.main_layout.setContentsMargins(0,0,0,0)
                 self.setLayout(self.main_layout)
                 self.var=QLabel(f'{var}=',font=font2,alignment=Qt.AlignTop)
                 self.valLayout=QVBoxLayout()
-                self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',
-                    triggered=lambda:par.windows.append((LatexOutput(self.latex,True)
-                    if latex is not None else self.val.text())))],val,font=font2,readOnly=1)
+                self.val=MLineEdit([QAction('求值',shortcut='Ctrl+E',
+                                            triggered=self.eval),
+                                    QAction('预览',shortcut='Ctrl+Alt+V',
+                                        triggered=lambda:par.windows.append((LatexOutput(self.latex,True)
+                                        if latex is not None else self.val.text())))],val,font=font2,readOnly=1)
 
                 self.val.setCursorPosition(0)
                 self.valLayout.addWidget(self.val)
@@ -120,6 +123,15 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
 
                 self.main_layout.addWidget(self.var)
                 self.main_layout.addLayout(self.valLayout,stretch=1)
+            
+            def eval(self):
+                content=self.val.text()
+                print(content)
+                if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
+                    if (result:=parser.evalf(content,digit[0])) is not None:
+                        self.par.par.windows.append(EvaluateOutput(self.par.par,content,result,self.latex))
+                    else:
+                        QMessageBox.warning(self,'无法求值','该表达式无法进行求值，请确保:\n1.表达式不含变量\n2.表达式不含未定义函数')
 
         def __init__(self,par,content:Dict[str,str]):
             super().__init__()
