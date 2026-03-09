@@ -91,7 +91,10 @@ class OutputWindow(Subwindow):
         content=self.display.toPlainText()
         if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
             if (result:=parser.evalf(content,digit[0])) is not None:
-                self.windows.append(EvaluateOutput(self,content,result,self.latex))
+                try:
+                    self.windows.append(EvaluateOutput(self,content,result,self.latex))
+                except Exception as e:
+                    QMessageBox.warning(self,'无法求值',f'求值时出现错误：\n{e}')
             else:
                 QMessageBox.warning(self,'无法求值','该表达式无法进行求值，请确保:\n1.表达式不含变量\n2.表达式不含未定义函数')
 
@@ -129,7 +132,10 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
                 print(content)
                 if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
                     if (result:=parser.evalf(content,digit[0])) is not None:
-                        self.par.par.windows.append(EvaluateOutput(self.par.par,content,result,self.latex))
+                        try:
+                            self.par.par.windows.append(EvaluateOutput(self.par.par,content,result,self.latex))
+                        except Exception as e:
+                            QMessageBox.warning(self,'无法求值',f'求值时出现错误：\n{e}')
                     else:
                         QMessageBox.warning(self,'无法求值','该表达式无法进行求值，请确保:\n1.表达式不含变量\n2.表达式不含未定义函数')
 

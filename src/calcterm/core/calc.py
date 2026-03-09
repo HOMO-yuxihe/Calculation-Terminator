@@ -97,10 +97,10 @@ def localDictGen(namespace:Namespace):# -> dict:
 def evalf(exp:str,digit:int):
     result=sympy.simplify(parse_expr(exp))
     try:
-        float(result)
+        complex(result)
     except TypeError:
         return None
-    return str(result.evalf(digit))
+    return str(result.evalf(digit)).replace('*I','i')
 
 def simplify(exp:str):
     return (str(res:=sympy.simplify(parse_expr(exp))),sympy.latex(res))
