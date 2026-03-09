@@ -7,8 +7,8 @@ from PyQt5.QtWidgets import (
     QPushButton,QAction,QScrollArea,QLineEdit,
     QShortcut,QInputDialog,QListView,QMenuBar,
     QMenu,QMessageBox,QDialog)
-from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent
-from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex
+from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent,QDesktopServices
+from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex,QUrl
 import calcterm.core.calc as parser
 import calcterm.core.exception_parser as err
 from calcterm.widgets.common import *
@@ -261,14 +261,22 @@ class MainWindow(WithSubwindow):
 
         self.setFont(font1)
         self.windows=[]
-
-        self.menubar=QMenuBar(self,font=fontdefault)
-        self.setMenuBar(self.menubar)
         self.namespace={'variables':[],'functions':[],'lambdas':[]}
         self.namespacemanager=NamespaceManager(self,self.namespace)
         self.windows.append(self.namespacemanager)
+
+        self.menubar=QMenuBar(self,font=fontdefault)
+        self.setMenuBar(self.menubar)
         self.namespaceMgmt=QAction('命名空间管理',self.menubar,triggered=self.openNamespaceManager)
         self.menubar.addAction(self.namespaceMgmt)
+
+        self.helpMenu=QMenu('帮助',self)
+        self.helpaction=QAction('打开帮助文档',self.helpMenu,triggered=self.help)
+        self.about=QAction('关于',self.helpMenu,triggered=lambda:
+                           QMessageBox.information(self,'关于','项目名：Calculation-Terminator\n版权所有：yuxihe\n版本:v0.4.4.1'))
+        self.helpMenu.addActions([self.helpaction,self.about])
+
+        self.menubar.addMenu(self.helpMenu)
 
         #标签页部分
         self.Tab_font=QFont('Microsoft Yahei',10)
@@ -432,6 +440,10 @@ class MainWindow(WithSubwindow):
             self.namespacemanager=NamespaceManager(self,self.namespace)
             self.namespacemanager.show()
             self.windows.append(self.namespacemanager)
+
+    def help(self):
+        url=QUrl.fromLocalFile('document.html')
+        QDesktopServices.openUrl(url)
 
     def closeEvent(self, event):
         super().closeEvent(event)
