@@ -25,6 +25,7 @@ class OutputWindow(Subwindow):
         self.setMinimumSize(400,200)
         self.par=parent
         self.central=QWidget()
+        self.latex=None
         self.setCentralWidget(self.central)
 
         self.main_layout=QVBoxLayout()
@@ -68,6 +69,7 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
         class OneSolve(QWidget):
             def __init__(self,par,var:str,val:str,latex:Union[None,str]=None):
                 super().__init__()
+                self.latex=None
                 self.main_layout=QHBoxLayout()
                 self.main_layout.setContentsMargins(0,0,0,0)
                 self.setLayout(self.main_layout)
