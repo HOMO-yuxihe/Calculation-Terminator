@@ -17,7 +17,7 @@ from calcterm.app.config import *
 from calcterm.app.namespacemgmt import *
 from typing import List,Dict,Union
 
-class OutputWindow(Subwindow,WithSubwindow):
+class OutputWindow(Subwindow):
     class _EvaluateOutput(Subwindow):
         def __init__(self,parent,src:str,result:str,srclatex:Union[None,str]=None):
             super().__init__(parent)
@@ -45,8 +45,7 @@ class OutputWindow(Subwindow,WithSubwindow):
             self.show()
 
     def __init__(self,parent,content,latex:Union[None,str]=None):
-        Subwindow.__init__(self,parent)
-        WithSubwindow.__init__(self)
+        super().__init__(parent)
         self.setWindowTitle('计算结果')
         self.resize(600,400)
         self.setMinimumSize(400,200)
@@ -63,7 +62,7 @@ class OutputWindow(Subwindow,WithSubwindow):
         # viewAction=QAction('预览',shortcut='Ctrl+Alt+V',triggered=self.view)
         self.closeShortcut=QShortcut(QKeySequence('Escape'),self,activated=self.close)
         self.display=MTextEdit([simplifyAction,evalAction,QAction('预览',shortcut='Ctrl+Alt+V',
-                    triggered=lambda:par.windows.append((LatexOutput(self.latex,True)
+                    triggered=lambda:self.par.windows.append((LatexOutput(self.latex,True)
                     if latex is not None else self.val.text())))],content,font=font2,readOnly=1)
         self.main_layout.addWidget(self.display)
 
