@@ -61,8 +61,8 @@ class OutputWindow(Subwindow):
     
     def eval(self):
         content=self.display.toPlainText()
-        if (res:=QInputDialog.getInt(self,'有效数字位数','高精度计算',15))[1]:
             self.display.setPlainText(parser.evalf(content,res[0]))
+        if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
 
 class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
     class SingleSolve(QFrame):
