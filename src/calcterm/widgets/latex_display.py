@@ -78,7 +78,7 @@ class LatexDisplay(QWidget):
             QTimer.singleShot(0,lambda:self.view.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio))
     
 class LatexOutput(QMainWindow):
-    def __init__(self,expr:str):
+    def __init__(self,expr:str,raw=False):
         super().__init__()
         self.setWindowTitle('Latex预览')
 
@@ -86,7 +86,7 @@ class LatexOutput(QMainWindow):
         self.main_layout=QVBoxLayout()
         try:
             print(expr.strip())
-            self.display=LatexDisplay(expr2latex(exp)) if (exp:=expr.strip()) else (QLabel('预览内容为空'))
+            self.display=LatexDisplay((exp if raw else expr2latex(exp))) if (exp:=expr.strip()) else (QLabel('预览内容为空'))
         except SyntaxError as e:
             QMessageBox.warning(self,'错误',f'表达式有语法错误，请更正后再试。\n错误详情:{err.syntaxErrTranslate(e)}')
             self.destroy()

@@ -34,14 +34,17 @@ class OutputWindow(Subwindow):
         evalAction=QAction('求值',shortcut='Ctrl+E',triggered=self.eval)
         # viewAction=QAction('预览',shortcut='Ctrl+Alt+V',triggered=self.view)
         self.closeShortcut=QShortcut(QKeySequence('Escape'),self,activated=self.close)
-        self.display=MTextEdit([simplifyAction,evalAction],content,font=font2,readOnly=1)
+        self.display=MTextEdit([simplifyAction,evalAction,QAction('预览',shortcut='Ctrl+Alt+V',
+                    triggered=lambda:par.windows.append((LatexOutput(self.latex,True)
+                    if latex is not None else self.val.text())))],content,font=font2,readOnly=1)
         self.main_layout.addWidget(self.display)
 
         if latex is not None:
-            self.latex=LatexDisplay(latex)
+            self.latex=latex
+            self.latexDisp=LatexDisplay(latex)
             self.latexTip=QLabel('Latex预览',font=font1,alignment=Qt.AlignLeft)
             self.main_layout.addWidget(self.latexTip)
-            self.main_layout.addWidget(self.latex)
+            self.main_layout.addWidget(self.latexDisp)
 
 
         self.show()
@@ -59,12 +62,6 @@ class OutputWindow(Subwindow):
         content=self.display.toPlainText()
         if (res:=QInputDialog.getInt(self,'有效数字位数','高精度计算',15))[1]:
             self.display.setPlainText(parser.evalf(content,res[0]))
-    
-    def view(self):
-        content=self.display.toPlainText()
-        disp=LatexOutput(content)
-        disp.show()
-        self.par.windows.append(disp)
 
 class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
     class SingleSolve(QFrame):
@@ -76,13 +73,17 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
                 self.setLayout(self.main_layout)
                 self.var=QLabel(f'{var}=',font=font2,alignment=Qt.AlignTop)
                 self.valLayout=QVBoxLayout()
-                self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:par.windows.append(LatexOutput(self.val.text())))],val,font=font2,readOnly=1)
+                self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',
+                    triggered=lambda:par.windows.append((LatexOutput(self.latex,True)
+                    if latex is not None else self.val.text())))],val,font=font2,readOnly=1)
+
                 self.val.setCursorPosition(0)
                 self.valLayout.addWidget(self.val)
 
                 if latex is not None:
-                    self.latex=LatexDisplay(latex)
-                    self.valLayout.addWidget(self.latex)
+                    self.latex=latex
+                    self.latexDisp=LatexDisplay(latex)
+                    self.valLayout.addWidget(self.latexDisp)
 
                 self.main_layout.addWidget(self.var)
                 self.main_layout.addLayout(self.valLayout,stretch=1)
