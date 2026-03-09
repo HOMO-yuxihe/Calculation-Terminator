@@ -66,12 +66,20 @@ def latex2svg(tex:str,font_size=12,margin=0.2):
     return result.decode('utf-8')
 
 def expr2latex(expr:str):
-    if not expr.strip():return ''
+    if not (expr:=expr.strip()):return ''
+    eq=0
+    if '=' in expr:
+        eq=1
+        lhs,rhs=expr.split('=',1)
     gd=global_dict_default.copy()
     gd.update(glob)
     gd.update(preview_gdict_override)
     with sympy.evaluate(False):
-        expression=parse_expr(expr,global_dict=gd)
+        if eq:
+            expression=sympy.Eq(parse_expr(lhs,global_dict=gd),
+                                parse_expr(rhs,global_dict=gd))
+        else:
+            expression=parse_expr(expr,global_dict=gd)
     expression=remove_mul_1(expression)
     print(expression)
     return sympy.latex(expression,mode='plain')
@@ -80,7 +88,7 @@ if __name__ == '__main__':
     pass
     # text = r'$x^2+y^2=z^2$'
     # print(latex_formula2svg(text,font_size=12))
-    expr='5**(1/4)'
+    expr='f(0)=1'
     tex=expr2latex(expr)
     print(tex)
     # print(latex2svg(tex))
