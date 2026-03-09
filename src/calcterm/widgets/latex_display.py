@@ -24,22 +24,17 @@ class LatexDisplay(QWidget):
 
             elif event.modifiers() & Qt.ShiftModifier:
                 horizontal_wheel_event = QWheelEvent(
-                    # 1. 基础位置参数（保持和原事件一致）
-                    event.pos(),                  # pos: QPoint（鼠标位置）
-                    event.globalPos(),            # globalPos: QPoint（全局位置）
-                    # 2. 滚动增量（保持和原事件一致）
-                    event.pixelDelta(),           # pixelDelta: QPoint（像素增量）
-                    event.angleDelta(),           # angleDelta: QPoint（角度增量）
-                    # 3. Qt4 兼容参数（Qt5 必需，根据方向赋值）
+                    event.pos(),
+                    event.globalPos(),
+                    event.pixelDelta(),
+                    event.angleDelta(),
                     event.angleDelta().x() if event.angleDelta().x() != 0 else event.angleDelta().y(),  # qt4Delta
-                    Qt.Horizontal,                # qt4Orientation: 改为水平方向
-                    # 4. 按键/修饰键状态（保持和原事件一致）
-                    event.buttons(),              # buttons: 鼠标按键
-                    Qt.KeyboardModifiers(),            # modifiers: 键盘修饰键（保留 Shift）
-                    # 5. 扩展参数（Qt5 重载必需）
-                    event.phase(),          # phase: 滚动阶段
-                    event.inverted(),             # inverted: 是否反向滚动
-                    event.source()                # source: 事件源
+                    Qt.Horizontal,
+                    event.buttons(),
+                    Qt.KeyboardModifiers(),
+                    event.phase(),
+                    event.inverted(),
+                    event.source()
                 )
                 QApplication.sendEvent(self.horizontalScrollBar(),horizontal_wheel_event)
             else:
@@ -82,14 +77,6 @@ class LatexDisplay(QWidget):
             self.scene.setSceneRect(self.renderer.viewBoxF())
             self.view.fitInView(self.scene.sceneRect(), mode=1)
     
-    # def wheelEvent(self, event:QWheelEvent):
-    #     if event.modifiers() & Qt.ControlModifier:
-    #         factor=1.25 if event.angleDelta().y()>0 else 0.8
-    #         self.view.scale(factor,factor)
-    #         event.ignore()
-    #     else:
-    #         return super().wheelEvent(event)\
-
 class LatexOutput(QMainWindow):
     def __init__(self,expr:str):
         super().__init__()
