@@ -96,7 +96,11 @@ def localDictGen(namespace:Namespace):# -> dict:
 
 def evalf(exp:str,digit:int):
     result=sympy.simplify(parse_expr(exp))
-    return str(res) if isinstance((res:=result.evalf(digit)),sympy.Float) else None
+    try:
+        float(result)
+    except TypeError:
+        return None
+    return str(result.evalf(digit))
 
 def simplify(exp:str):
     return (str(res:=sympy.simplify(parse_expr(exp))),sympy.latex(res))
