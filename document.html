@@ -1,0 +1,492 @@
+<html>
+
+<head>
+    <style>
+        body {
+            padding: 15px;
+            line-height: 1.8;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        code {
+            background: #f1f3f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        blockquote {
+            border-left: 4px solid #6c757d;
+            padding-left: 15px;
+            color: #6c757d;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <title>Calculation Terminator说明书</title>
+</head>
+
+<body>
+    <h1>Calculation-Terminator 操作说明书</h1>
+    <p><strong>版本：V0.4.4.1</strong></p>
+    <p><strong>适用对象</strong>：代数计算、方程求解、微分方程求解及拉格朗日乘数法计算需求用户</p>
+    <p><strong>开发语言</strong>：Python 100.0%</p>
+    <h2>目录</h2>
+    <ol>
+        <li>
+            <p><strong>简介</strong> ........................................................................ 1</p>
+        </li>
+        <li>
+            <p><strong>基础界面</strong> .................................................................... 1</p>
+        </li>
+        <li>
+            <p><strong>核心功能操作</strong> ............................................................ 2</p>
+        </li>
+        <li>
+            <p><strong>输入语法规范</strong> ............................................................ 4</p>
+        </li>
+        <li>
+            <p><strong>全局函数/常数库调用</strong> ................................................ 6</p>
+        </li>
+        <li>
+            <p><strong>辅助功能</strong> .................................................................... 9</p>
+        </li>
+        <li>
+            <p><strong>注意事项</strong> .................................................................... 10</p>
+        </li>
+        <li>
+            <p><strong>常见错误提示及解决</strong> ................................................ 10</p>
+        </li>
+    </ol>
+    <hr>
+    <h2>1 简介</h2>
+    <p>Calculation-Terminator是一款轻量高效的代数计算工具，支持<strong>代数/数值计算、方程求解、微分方程求解、拉格朗日乘数法求极值</strong>四大核心功能，内置丰富的数学函数/常数库，支持LaTeX格式结果预览，可通过命名空间管理器自定义变量/函数及相关假设，满足日常代数运算、数学求解的多样化需求。
+    </p>
+    <p>本工具所有计算逻辑基于Python实现，输入遵循Python标准语法，操作简洁，结果精准，是数学学习、工程计算的实用辅助工具。</p>
+    <hr>
+    <h2>2 基础界面</h2>
+    <p>主程序启动后显示<strong>单窗口多标签页</strong>界面，无冗余弹窗，核心功能分区明确，操作入口直观。</p>
+    <h3>2.1 核心功能标签页</h3>
+    <p>主窗口默认显示4个功能标签页，为工具核心操作区域，点击标签可快速切换：</p>
+    <ul>
+        <li>
+            <p>代数/数值计算：基础代数表达式化简、数值求值、极限/积分/求导等运算；</p>
+        </li>
+        <li>
+            <p>方程求解：一元/多元方程（组）求解，自动过滤无效解；</p>
+        </li>
+        <li>
+            <p>微分方程求解：常微分方程（组）求解，支持输入初始条件；</p>
+        </li>
+        <li>
+            <p>拉格朗日乘数：通过拉格朗日乘数法求解目标函数在约束条件下的极值点。</p>
+        </li>
+    </ul>
+    <h3>2.2 顶部菜单栏</h3>
+    <p>仅含<strong>命名空间管理</strong>入口，点击可打开变量/函数管理窗口，用于自定义变量、函数及添加相关数学假设（如<code>real=True</code>、<code>continuous=True</code>）。
+    </p>
+    <h3>2.3 通用操作区域</h3>
+    <p>各标签页统一包含<strong>输入框</strong>（单行/多行）、<strong>功能按钮</strong>（计算/求解/开始计算），结果输出以<strong>独立弹窗</strong>呈现，支持弹窗内快捷操作。</p>
+    <hr>
+    <h2>3 核心功能操作</h2>
+    <h3>3.1 代数/数值计算</h3>
+    <p>适用于基础代数表达式化简、数值求值、极限、积分、求导、泰勒展开等单表达式运算。</p>
+    <ol>
+        <li>
+            <p>切换至「代数/数值计算」标签页；</p>
+        </li>
+        <li>
+            <p>在<strong>输入表达式</strong>单行文本框中，按本说明书语法规范输入待计算表达式（支持调用全局函数/常数库）；</p>
+        </li>
+        <li>
+            <p>点击<strong>计算/执行</strong>按钮，程序自动完成语法检查与计算，生成<strong>结果弹窗</strong>；</p>
+        </li>
+        <li>
+            <p>结果弹窗内可通过快捷键实现LaTeX预览、结果化简等操作，按<code>Esc</code>关闭弹窗。</p>
+        </li>
+    </ol>
+    <h3>3.2 方程求解</h3>
+    <p>适用于一元/多元代数方程（组）求解，<strong>每行输入一个方程</strong>，程序自动解析为「表达式=0」形式求解。</p>
+    <ol>
+        <li>
+            <p>切换至「方程求解」标签页；</p>
+        </li>
+        <li>
+            <p>在<strong>输入方程</strong>多行文本框中输入方程（组），每行一个方程，无需写等号（如求解<code>x²-4=0</code>仅输入<code>x**2-4</code>）；</p>
+        </li>
+        <li>
+            <p>点击<strong>求解</strong>按钮，程序弹出<strong>变量选择窗口</strong>，勾选需要求解的变量（如<code>x</code>、<code>y</code>），点击「确定」；</p>
+        </li>
+        <li>
+            <p>程序生成<strong>多组解结果窗口</strong>，展示所有有效解，支持LaTeX格式预览，按<code>Esc</code>关闭窗口。</p>
+        </li>
+    </ol>
+    <h3>3.3 微分方程求解</h3>
+    <p>适用于常微分方程（组）求解，支持输入初始条件，输出解析解。</p>
+    <ol>
+        <li>
+            <p>切换至「微分方程求解」标签页；</p>
+        </li>
+        <li>
+            <p>在<strong>输入微分方程</strong>多行文本框中输入微分方程，每行一个；</p>
+        </li>
+        <li>
+            <p>在<strong>微分方程的初始条件</strong>多行文本框中输入初始条件，<strong>每行一个，格式为</strong>
+                <strong><code>f(x)=y</code></strong>（如<code>f(0)=1</code>、<code>diff(f(x),x).subs(x,0)=2</code>）；</p>
+        </li>
+        <li>
+            <p>点击<strong>求解</strong>按钮，程序弹出<strong>函数选择窗口</strong>，勾选目标函数（如<code>f</code>），点击「确定」；</p>
+        </li>
+        <li>
+            <p>程序生成<strong>微分方程解结果窗口</strong>，展示解析解，支持LaTeX格式预览，按<code>Esc</code>关闭窗口。</p>
+        </li>
+    </ol>
+    <h3>3.4 拉格朗日乘数法求极值</h3>
+    <p>适用于求解目标函数在多个约束条件下的极值点，支持多约束条件、多元目标函数。</p>
+    <ol>
+        <li>
+            <p>切换至「拉格朗日乘数」标签页；</p>
+        </li>
+        <li>
+            <p>在<strong>约束条件</strong>多行文本框中输入约束条件，每行一个，按语法规范编写（支持调用全局函数/常数库）；</p>
+        </li>
+        <li>
+            <p>在<strong>目标函数</strong>单行文本框中输入待求极值的目标函数表达式；</p>
+        </li>
+        <li>
+            <p>点击<strong>开始计算</strong>按钮，程序自动完成计算，生成<strong>极值点结果窗口</strong>，展示所有可能的极值点，支持LaTeX格式预览，按<code>Esc</code>关闭窗口。
+            </p>
+        </li>
+    </ol>
+    <h3>3.5 表达式求值</h3>
+    <p>适用于求某一个代数式的数值。</p>
+    <ol>
+        <li>
+            <p>使用任意一个功能并输出一个或多个结果；</p>
+        </li>
+        <li>
+            <p>右键需要求值的结果的原始格式(代码格式)所处的控件(不是显示LaTex的)；</p>
+        </li>
+        <li>
+            <p>单击“求值”按钮，输入求值的有效数字位数，即可看到输出结果。</p>
+        </li>
+    </ol>
+    <p>例：对E求10位有效数字得到2.718281828</p>
+    <hr>
+    <h2>4 输入语法规范</h2>
+    <p>本工具所有表达式、方程、约束条件、目标函数的输入<strong>均遵循Python标准语法</strong>，并补充数学运算专属语法规则，违规输入将触发语法错误提示，具体规则如下：</p>
+    <h3>4.1 等号规则</h3>
+    <p>方程/约束条件输入<strong>不得包含等号</strong>，程序会自动将输入的表达式解析为「表达式=0」的形式进行求解。
+        例：<code>1+1</code>、<code>E+pi</code>、<code>x**2+2x+1</code>、<code>ln(x)</code>、<code>sin(x)+cos(x)</code>。</p>
+    <p>微分方程的初始条件<strong>必须</strong>为<code>f(a)=b</code>的形式，其中a、b均为已知常数。
+        例：<code>f(0)=1</code>、<code>f(1)=1</code>。</p>
+    <h3>4.2 括号规则</h3>
+    <ol>
+        <li>
+            <p>函数调用的所有参数必须用<strong>小括号</strong>括起，无中括号、大括号；</p>
+        </li>
+        <li>
+            <p>所有括号必须<strong>左右配对</strong>，未闭合/多余括号将触发语法错误；</p>
+        </li>
+        <li>
+            <p>复杂表达式可通过多层小括号改变运算优先级，如<code>(x+2)*(x-3)</code>。</p>
+        </li>
+    </ol>
+    <p>例：<code>(x+1)*(2*(x+2)+1)</code></p>
+    <h3>4.3 变量规则</h3>
+    <ol>
+        <li>
+            <p>变量引用格式：<code>[运算符]&lt;变量名&gt;[运算符]</code>（如<code>2*x</code>、<code>x+3</code>），单独变量可直接输入（如<code>x</code>）；
+            </p>
+        </li>
+        <li>
+            <p>仅本说明书<strong>5.1 常数</strong>列出的标识符会被解析为数学常数，其他未定义标识符均被解析为普通变量；</p>
+        </li>
+        <li>
+            <p><strong>变量定义</strong>：</p>
+            <ul>
+                <li>
+                    <p>无数学假设（如实数、连续）时，无需显式定义，直接输入即可使用；</p>
+                </li>
+                <li>
+                    <p>需添加数学假设时，需在「命名空间管理器」中显式定义并配置假设；</p>
+                </li>
+            </ul>
+            <p><strong>支持的变量假设</strong>（按「假设名、取值、含义」整理，可直接在命名空间管理中配置，基于sympy底层支持）：</p>
+            <p>|假设名|取值|含义|
+                |---|---|---|
+                |real|True/False|假设变量为实数（默认False，变量可取值为复数）；|
+                |integer|True/False|假设变量为整数，适用于整数运算、因式分解等场景；|
+                |positive|True/False|假设变量为正实数，避免对数、平方根运算出现无意义结果；|
+                |negative|True/False|假设变量为负实数，需结合具体运算场景使用；|
+                |nonzero|True/False|假设变量不为0，避免除法、倒数运算出现分母为0的错误；|
+                |positive_infinite|True/False|假设变量为非正无穷大，适用于极限、积分等运算；|
+                |negative_infinite|True/False|假设变量为非负无穷大，适用于极限、积分等运算。|</p>
+            <p>说明：可同时配置多个假设（如<code>real=True, positive=True</code>），假设之间用英文逗号分隔，不支持冲突假设（如同时配置<code>positive=True</code>和<code>negative=True</code>）。
+            </p>
+        </li>
+    </ol>
+    <p>例：<code>x+y</code>、<code>2*x+1</code></p>
+    <ol>
+        <li>
+            <p><strong>变量名命名禁忌</strong>：</p>
+            <ul>
+                <li>
+                    <p>不能与<strong>5.1 常数</strong>、<strong>5.2 函数</strong>中的标识符重复，否则计算出错；</p>
+                </li>
+                <li>
+                    <p>显式定义的变量名不能重复，不能与显式定义的函数名重复；</p>
+                </li>
+                <li>
+                    <p>若变量名与内置常数/函数名重复，内置常数/函数将被覆盖，失去原有功能。</p>
+                </li>
+            </ul>
+            <p>正确示范：<code>a</code>、<code>x</code>
+                错误示范：<code>if</code>(使用Python保留字)、<code>pi</code>(覆盖圆周率pi，不建议)</p>
+        </li>
+    </ol>
+    <h3>4.4 函数规则</h3>
+    <ol>
+        <li>
+            <p>函数调用格式：<code>&lt;函数名&gt;(&lt;参数1&gt;,&lt;参数2&gt;,…)</code>（参数间用英文逗号分隔，无空格），如<code>diff(x**3, x)</code>、<code>lim(sin(x)/x, x, 0)</code>；
+            </p>
+        </li>
+        <li>
+            <p>仅本说明书<strong>5.2 函数</strong>列出的标识符会被解析为功能函数，其他未定义函数名均被解析为<strong>未定义函数</strong>，仅在微分方程求解中有效；</p>
+        </li>
+        <li>
+            <p><strong>函数假设</strong>：</p>
+            <ul>
+                <li>可通过「命名空间管理器」为函数添加假设，仅支持<code>real=True</code>、<code>continuous=True</code>等常规数学假设；</li>
+            </ul>
+            <p>非支持的假设输入将触发程序弹窗提示，无法保存；</p>
+            <p><strong>支持的函数假设</strong>（按「假设名、取值、含义」整理，可直接在命名空间管理中配置，基于sympy底层支持）：</p>
+            <p>|假设名|取值|含义|
+                |---|---|---|
+                |real|True/False|假设函数为实值函数（默认False，函数可取值为复数）；|
+                |continuous|True/False|假设函数为连续函数，适用于积分、求导等微积分运算；|
+                |differentiable|True/False|假设函数为可导函数，确保求导运算正常执行；|
+                |positive|True/False|假设函数值域为正实数，适用于对数、平方根等运算；|
+                |negative|True/False|假设函数值域为负实数，需结合具体运算场景使用；|
+                |periodic|True/False|假设函数为周期函数，适用于三角函数相关运算。|
+                |real|True/False|假设函数为实值函数（默认False，函数可取值为复数）；|
+                |continuous|True/False|假设函数为连续函数，适用于积分、求导等微积分运算；|
+                |differentiable|True/False|假设函数为可导函数，确保求导运算正常执行；|
+                |positive|True/False|假设函数值域为正实数，适用于对数、平方根等运算；|
+                |negative|True/False|假设函数值域为负实数，需结合具体运算场景使用；|
+                |periodic|True/False|假设函数为周期函数，适用于三角函数相关运算。|</p>
+            <p>说明：可同时配置多个假设（如<code>real=True, continuous=True</code>），假设之间用英文逗号分隔，不支持冲突假设（如同时配置<code>positive=True</code>和<code>negative=True</code>）。
+            </p>
+        </li>
+        <li>
+            <p><strong>函数定义</strong>：</p>
+            <ul>
+                <li>
+                    <p>无数学假设时，无需显式定义，直接调用内置函数即可；</p>
+                </li>
+                <li>
+                    <p>需添加假设时，需在「命名空间管理器」中显式定义并配置假设；</p>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <p><strong>函数名命名禁忌</strong>：</p>
+            <ul>
+                <li>
+                    <p>与变量名命名禁忌一致，不能与内置常数/函数、已定义变量/函数名重复；</p>
+                </li>
+                <li>
+                    <p>若函数名与内置常数/函数名重复，内置常数/函数将被覆盖，失去原有功能。</p>
+                </li>
+            </ul>
+            <p>正确示范：<code>f</code>、<code>g</code>
+                错误示范：<code>if</code>、<code>log</code></p>
+        </li>
+    </ol>
+    <hr>
+    <h2>5 全局函数/常数库调用</h2>
+    <p>工具内置<code>glob</code>字典定义的<strong>数学常数</strong>和<strong>功能函数</strong>，可直接在所有输入框中调用，无需额外定义，调用格式严格遵循4.4函数规则，常数可直接使用。
+    </p>
+    <p>例：<code>E</code>、<code>sin(pi)</code></p>
+    <h3>5.1 数学常数</h3>
+    <p>|标识符|功能说明|调用示例|备注|
+        |---|---|---|---|
+        |pi|圆周率 π（3.14159…）|pi|直接使用|
+        |E|自然常数 e（2.71828…）|E|直接使用|
+        |I|虚数单位 i（√-1）|I|直接使用|
+        |inf|无穷大|inf、+inf、-inf|多用于极限计算和数列计算|</p>
+    <h3>5.2 功能函数</h3>
+    <p>按功能分类，调用示例严格遵循Python语法，参数需匹配函数要求，否则触发计算失败。</p>
+    <h4>5.2.1 表达式处理</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |simp|表达式化简|simp(x<strong>2 + 2*x + 1)|
+            |factor|多项式因式分解|factor(x</strong>2 - 4)|
+        |logcombine|对数式合并|logcombine(ln(x) + ln(y))|</p>
+    <h4>5.2.2 基础运算</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |abs|绝对值计算|abs(-5)、abs(x-3)|
+        |sqrt|平方根计算|sqrt(16)、sqrt(x)|
+        |eval|数值求值|eval(pi, 5)（保留5位有效数字）|</p>
+    <h4>5.2.3 对数/指数（本工具无单独指数函数，用<code>**</code>实现，如<code>e^x</code>写为<code>E**x</code>）</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |ln|自然对数（以e为底）|ln(E)、ln(x)|
+        |lg|常用对数（以10为底）|lg(100)、lg(x)|
+        |log|自定义底数对数|log(8, 2)（以2为底8的对数）|</p>
+    <h4>5.2.4 微积分运算</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |diff|求导/微分|diff(x<strong>3, x)（对x求一阶导）、diff(sin(x),x,2)（二阶导）|
+            |int|积分|int(x</strong>2, x)（不定积分）、int(x, (x,0,1))（定积分，x从0到1）|</p>
+    <h4>5.2.5 极限/级数</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |lim|求极限|lim(sin(x)/x, x, 0)（x趋近于0）、lim(1/x, x, inf)（x趋近于无穷大）|
+        |taylor|泰勒级数展开|taylor(sin(x), x, 0, 5)（x=0处5阶展开）|</p>
+    <h4>5.2.6 三角函数/反三角函数</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |sin/cos/tan|正弦/余弦/正切|sin(pi/2)、cos(0)、tan(pi/4)|
+        |cot/sec/csc|余切/正割/余割|cot(pi/4)、sec(0)、csc(pi/6)|
+        |arcsin/arccos/arctan|反正弦/反余弦/反正切|arcsin(1)、arccos(0)、arctan(1)|
+        |arccot/arcsec/arccsc|反余切/反正割/反余割|arccot(1)、arcsec(2)、arccsc(2)|</p>
+    <h4>5.2.7 方程/根相关</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |solve|方程求解（底层）|solve(x<strong>2 - 4, x)|
+            |CRootOf|复数根表示|CRootOf(x</strong>3 - 1, 1)|
+        |ComplexRootOf|复数根（同CRootOf）|ComplexRootOf(x<strong>2 + 1, 0)|
+            |RootSum|根的和|RootSum(x</strong>2 - 2, lambda x: x)|
+        |rootof|多项式根|rootof(x**2 - 4, 0)|</p>
+    <h4>5.2.8 特殊函数</h4>
+    <p>|标识符|功能说明|调用示例|
+        |---|---|---|
+        |LambertW|朗伯W函数，求解方程w·e^w = z的解|LambertW(1)、LambertW(2, 0)|
+        |erf|误差函数，常用于概率、统计及偏微分方程|erf(0)、erf(1)、erf(x)|
+        |erfc|互补误差函数，erfc(x) = 1 - erf(x)|erfc(0)、erfc(1)、erfc(x)|
+        |gamma|伽马函数，阶乘的推广，Γ(n)=(n-1)!|gamma(5)、gamma(x)、gamma(0.5)|
+        |beta|贝塔函数，与伽马函数相关，常用于积分计算|beta(2,3)、beta(x,y)|
+        |zeta|黎曼ζ函数，常用于数论及分析领域|zeta(2)、zeta(3)、zeta(s)|</p>
+    <hr>
+    <h2>6 辅助功能</h2>
+    <h3>6.1 命名空间管理</h3>
+    <p>为工具核心自定义功能，用于管理变量、函数的定义与假设，点击顶部菜单栏「命名空间管理」即可打开，支持以下操作：</p>
+    <ol>
+        <li>
+            <p><strong>查看</strong>：实时查看已显式定义的<strong>变量/函数的标识符、显示名、数学假设</strong>；</p>
+        </li>
+        <li>
+            <p><strong>添加</strong>：添加新变量/函数，配置标识符、显示名及相关数学假设（如<code>real=True</code>）；</p>
+        </li>
+        <li>
+            <p><strong>修改</strong>：编辑已定义变量/函数的显示名、数学假设，不可修改标识符；</p>
+        </li>
+        <li>
+            <p><strong>删除</strong>：删除无需使用的已定义变量/函数，删除后可重新定义；</p>
+        </li>
+        <li>
+            <p><strong>假设限制</strong>：仅支持常规数学假设，非支持假设无法保存，程序弹窗提示。</p>
+        </li>
+    </ol>
+    <h3>6.2 通用快捷键</h3>
+    <p>工具内置2个全局快捷键，在<strong>所有输入框、结果窗口</strong>中均可使用，无需额外配置，快捷键功能互斥，操作直观：</p>
+    <ol>
+        <li>
+            <p><strong>Ctrl+Alt+V</strong>：预览当前内容的<strong>LaTeX格式</strong>，适配复杂数学公式的可视化查看；</p>
+        </li>
+        <li>
+            <p><strong>Esc</strong>：关闭当前打开的<strong>结果弹窗/选择窗口</strong>，返回主窗口，不影响主程序运行。</p>
+        </li>
+    </ol>
+    <hr>
+    <h2>7 注意事项</h2>
+    <ol>
+        <li>
+            <p>所有输入框为空时，点击「计算/执行」「求解」「开始计算」按钮，程序将弹出<strong>内容不能为空</strong>错误提示，需输入内容后再操作；</p>
+        </li>
+        <li>
+            <p>输入内容违反语法规范（如括号不配对、函数参数错误、变量/函数名重复）时，程序将弹出<strong>对应的语法错误提示</strong>，需按提示修正后再计算；</p>
+        </li>
+        <li>
+            <p>微分方程初始条件<strong>必须严格遵循</strong> <strong><code>f(x)=y</code></strong>
+                <strong>格式</strong>，格式错误将导致求解失败，无结果输出；</p>
+        </li>
+        <li>
+            <p>同时打开多个结果窗口时，建议及时关闭无用窗口，避免占用系统资源；</p>
+        </li>
+        <li>
+            <p>关闭主窗口将<strong>直接退出整个程序</strong>，所有打开的结果窗口、命名空间管理窗口将同步关闭，无保存提示；</p>
+        </li>
+        <li>
+            <p>显式定义变量/函数时，建议做好记录，避免与内置常数/函数名重复，导致内置功能被覆盖；</p>
+        </li>
+        <li>
+            <p>本工具暂不支持偏微分方程、复杂超越方程的数值解，仅输出解析解，无解析解时将弹出相关提示。</p>
+        </li>
+        <li>
+            <p>使用「拉格朗日乘数」功能时，建议显式定义变量并添加<code>real:True</code>假设（参考<code>4.3</code>），因为拉格朗日乘数法在实数域的解才有意义。</p>
+        </li>
+    </ol>
+    <hr>
+    <h2>8 常见错误提示及解决</h2>
+    <p>|错误提示内容|错误原因|解决方法|
+        |---|---|---|
+        |内容不能为空|输入框为空时点击功能按钮|在对应输入框中按语法规范输入内容后，重新点击按钮|
+        |括号不匹配|输入内容中括号未闭合/多余|检查输入内容，补充缺失括号或删除多余括号|
+        |函数参数错误|函数参数数量/类型不匹配|按本说明书5.2函数调用示例，修正参数数量/类型|
+        |变量/函数名重复|显式定义的标识符重复|更换标识符，避免与已定义内容、内置常数/函数名重复|
+        |无效假设|命名空间管理中输入非支持假设|仅输入支持的数学假设（如<code>real=True</code>、<code>continuous=True</code>）|
+        |无解析解|待求解内容无数学解析解|检查输入内容是否正确，或更换为有解析解的表达式/方程|
+        |未定义标识符|调用未定义的变量/函数|若为普通变量，直接使用；若需添加假设，在命名空间管理器中定义|
+        <strong>本说明书最终解释权归Calculation-Terminator开发者所有，版本更新将同步更新说明书内容</strong>
+    </p>
+    <p><strong>更新日期</strong>：对应项目仓库最新commit日期</p>
+    <p><strong>项目仓库</strong>：<a
+            href="https://github.com/HOMO-yuxihe/Calculation-Terminator">https://github.com/HOMO-yuxihe/Calculation-Terminator</a>
+    </p>
+
+</body>
+
+</html>
