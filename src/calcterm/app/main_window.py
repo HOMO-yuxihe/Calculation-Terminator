@@ -17,9 +17,36 @@ from calcterm.app.config import *
 from calcterm.app.namespacemgmt import *
 from typing import List,Dict,Union
 
-class OutputWindow(Subwindow):
+class OutputWindow(Subwindow,WithSubwindow):
+    class _EvaluateOutput(Subwindow):
+        def __init__(self,parent,src:str,result:str,srclatex:Union[None,str]=None):
+            super().__init__(parent)
+            self.setWindowTitle('求值结果')
+            self.latex=srclatex
+
+            self.central=QWidget()
+            self.setCentralWidget(self.central)
+            self.main_layout=QVBoxLayout()
+            self.central.setLayout(self.main_layout)
+
+            self.srcTip=QLabel('求值的表达式',font=font1)
+            self.src=MTextEdit([QAction('预览',shortcut='Ctrl+Alt+V',
+                    triggered=lambda:self.par.windows.append((LatexOutput(srclatex,True))))] if self.latex else [],
+                    src,font=font2,readOnly=1)
+            self.resultTip=QLabel('求值结果',font=font1)
+            print(type(result))
+            self.result=QTextEdit(result,font=font2,readOnly=1)
+
+            self.main_layout.addWidget(self.srcTip)
+            self.main_layout.addWidget(self.src)
+            self.main_layout.addWidget(self.resultTip)
+            self.main_layout.addWidget(self.result)
+
+            self.show()
+
     def __init__(self,parent,content,latex:Union[None,str]=None):
-        super().__init__(parent)
+        Subwindow.__init__(self,parent)
+        WithSubwindow.__init__(self)
         self.setWindowTitle('计算结果')
         self.resize(600,400)
         self.setMinimumSize(400,200)
@@ -57,12 +84,17 @@ class OutputWindow(Subwindow):
     def simplify(self):
         content=self.display.toPlainText()
         result=parser.simplify(content)
-        self.display.setPlainText(result)
+        self.display.setPlainText(result[0])
+        self.latex=result[1]
+        self.latexDisp.setLatex(self.latex)
     
     def eval(self):
         content=self.display.toPlainText()
-            self.display.setPlainText(parser.evalf(content,res[0]))
         if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
+            if (result:=parser.evalf(content,digit[0])) is not None:
+                self.windows.append(self._EvaluateOutput(self,content,result,self.latex))
+            else:
+                QMessageBox.warning(self,'无法求值','该表达式无法进行求值，请确保:\n1.表达式不含变量\n2.表达式不含未定义函数')
 
 class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
     class SingleSolve(QFrame):

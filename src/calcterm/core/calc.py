@@ -96,10 +96,10 @@ def localDictGen(namespace:Namespace):# -> dict:
 
 def evalf(exp:str,digit:int):
     result=sympy.simplify(parse_expr(exp))
-    return str(result.evalf(digit))
+    return str(res) if isinstance((res:=result.evalf(digit)),sympy.Float) else None
 
 def simplify(exp:str):
-    return str(sympy.simplify(parse_expr(exp)))
+    return (str(res:=sympy.simplify(parse_expr(exp))),sympy.latex(res))
 
 def calc(exp:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,str]]]]:
     '''
