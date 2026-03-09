@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QByteArray, Qt
+from PyQt5.QtCore import QByteArray, QRectF, Qt
 from PyQt5.QtGui import QFont, QPainter,QWheelEvent
 from PyQt5.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
 from PyQt5.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
@@ -75,7 +75,7 @@ class LatexDisplay(QWidget):
             self.svg_item.setElementId('')
             self.svg_item.setPos(0,0)
             self.scene.setSceneRect(self.renderer.viewBoxF())
-            self.view.fitInView(self.scene.sceneRect(), mode=1)
+            QTimer.singleShot(0,lambda:self.view.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio))
     
 class LatexOutput(QMainWindow):
     def __init__(self,expr:str):

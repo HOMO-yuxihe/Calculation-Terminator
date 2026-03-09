@@ -122,7 +122,9 @@ def calc(exp:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,
         return [None,('错误','表达式不能为空')]
     local=localDictGen(namespace)
     try:
-        result[0]=str(parse_expr(exp,local_dict=local,global_dict=glob))
+        res=parse_expr(exp,local_dict=local,global_dict=glob)
+        result[0]=[str(res),
+                   sympy.latex(res)]
     except SyntaxError as e:
         result[1]=('语法错误',syntaxErrTranslate(e))
     except Exception as e:
@@ -178,7 +180,7 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace)->Tuple[str,Tuple[str,Union
     result[0]=[]
     for i in solves:
         solve=sympy.simplify(Lag.subs(i))
-        i={str(a):str(b) for a,b in i.items()}
+        i={str(a):(str(b),sympy.latex(b)) for a,b in i.items()}
         i['result']=str(solve)
         result[0].append(i)
     return result
@@ -222,7 +224,7 @@ def smartsolver(expr:List[str],namespace:Namespace):
         result[0]=nlsolve()
     if result[0]==[]:
         return [None,('无法求解','抱歉，程序无法求得该方程组的解，原因可能有:\n1.方程组本身无解;\n2.程序暂不支持求解此类方程组')]
-    yield [{str(j):str(k) for j,k in i.items()} for i in result[0]]
+    yield [{str(j):(str(k),sympy.latex(k)) for j,k in i.items()} for i in result[0]]
 
 def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
     if not expr:
@@ -285,7 +287,7 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
             res=[{i.lhs:i.rhs} for i in result]
     else:
         res=[{j.lhs:j.rhs for j in i} for i in result]
-    yield [[{str(j):str(k) for j,k in i.items()} for i in res],None]
+    yield [[{str(j):(str(k),sympy.latex(k)) for j,k in i.items()} for i in res],None]
 
 def is_assumption(assump:str):
     return assump in defined_facts

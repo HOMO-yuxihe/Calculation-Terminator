@@ -18,20 +18,32 @@ from calcterm.app.namespacemgmt import *
 from typing import List,Dict,Union
 
 class OutputWindow(Subwindow):
-    def __init__(self,parent,content):
+    def __init__(self,parent,content,latex:Union[None,str]=None):
         super().__init__(parent)
         self.setWindowTitle('计算结果')
         self.resize(600,400)
         self.setMinimumSize(400,200)
         self.par=parent
+        self.central=QWidget()
+        self.setCentralWidget(self.central)
+
+        self.main_layout=QVBoxLayout()
+        self.central.setLayout(self.main_layout)
 
         simplifyAction=QAction('化简',shortcut='Ctrl+S',triggered=self.simplify)
         evalAction=QAction('求值',shortcut='Ctrl+E',triggered=self.eval)
-        viewAction=QAction('预览',shortcut='Ctrl+Alt+V',triggered=self.view)
+        # viewAction=QAction('预览',shortcut='Ctrl+Alt+V',triggered=self.view)
         self.closeShortcut=QShortcut(QKeySequence('Escape'),self,activated=self.close)
-        self.display=MTextEdit([simplifyAction,evalAction,viewAction],content,font=font2,readOnly=1)
+        self.display=MTextEdit([simplifyAction,evalAction],content,font=font2,readOnly=1)
+        self.main_layout.addWidget(self.display)
 
-        self.setCentralWidget(self.display)
+        if latex is not None:
+            self.latex=LatexDisplay(latex)
+            self.latexTip=QLabel('Latex预览',font=font1,alignment=Qt.AlignLeft)
+            self.main_layout.addWidget(self.latexTip)
+            self.main_layout.addWidget(self.latex)
+
+
         self.show()
     
     # def keyPressEvent(self, event):
@@ -57,16 +69,23 @@ class OutputWindow(Subwindow):
 class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
     class SingleSolve(QFrame):
         class OneSolve(QWidget):
-            def __init__(self,par,var:str,val:str):
+            def __init__(self,par,var:str,val:str,latex:Union[None,str]=None):
                 super().__init__()
                 self.main_layout=QHBoxLayout()
                 self.main_layout.setContentsMargins(0,0,0,0)
                 self.setLayout(self.main_layout)
-                self.var=QLabel(f'{var}=',font=font2)
+                self.var=QLabel(f'{var}=',font=font2,alignment=Qt.AlignTop)
+                self.valLayout=QVBoxLayout()
                 self.val=MLineEdit([QAction('预览',shortcut='Ctrl+Alt+V',triggered=lambda:par.windows.append(LatexOutput(self.val.text())))],val,font=font2,readOnly=1)
                 self.val.setCursorPosition(0)
+                self.valLayout.addWidget(self.val)
+
+                if latex is not None:
+                    self.latex=LatexDisplay(latex)
+                    self.valLayout.addWidget(self.latex)
+
                 self.main_layout.addWidget(self.var)
-                self.main_layout.addWidget(self.val,stretch=1)
+                self.main_layout.addLayout(self.valLayout,stretch=1)
 
         def __init__(self,par,content:Dict[str,str]):
             super().__init__()
@@ -75,7 +94,7 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
             self.setLayout(self.main_layout)
 
             for i,j in content.items():
-                self.main_layout.addWidget(self.OneSolve(par,i,j))
+                self.main_layout.addWidget(self.OneSolve(par,i,*j))
             self.setStyleSheet('''
                 QFrame#SingleSolve {
                     border: 1px solid #cccccc;
@@ -282,7 +301,8 @@ class MainWindow(WithSubwindow):
             QMessageBox.warning(self,*result[1])
             return
 
-        self.windows.append(OutputWindow(self,result[0]))
+        print(result)
+        self.windows.append(OutputWindow(self,*result[0]))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
 
