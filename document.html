@@ -40,14 +40,18 @@
         table {
             border-collapse: collapse;
             width: 100%;
-            margin: 20px 0;
+            margin: 10px 0;
         }
 
         th,
         td {
-            border: 1px solid #dee2e6;
-            padding: 10px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
         }
 
         th {
@@ -98,12 +102,12 @@
             <p><strong>常见错误提示及解决</strong> ................................................ 10</p>
         </li>
     </ol>
-    <hr>
+    <hr />
     <h2>1 简介</h2>
     <p>Calculation-Terminator是一款轻量高效的代数计算工具，支持<strong>代数/数值计算、方程求解、微分方程求解、拉格朗日乘数法求极值</strong>四大核心功能，内置丰富的数学函数/常数库，支持LaTeX格式结果预览，可通过命名空间管理器自定义变量/函数及相关假设，满足日常代数运算、数学求解的多样化需求。
     </p>
     <p>本工具所有计算逻辑基于Python实现，输入遵循Python标准语法，操作简洁，结果精准，是数学学习、工程计算的实用辅助工具。</p>
-    <hr>
+    <hr />
     <h2>2 基础界面</h2>
     <p>主程序启动后显示<strong>单窗口多标签页</strong>界面，无冗余弹窗，核心功能分区明确，操作入口直观。</p>
     <h3>2.1 核心功能标签页</h3>
@@ -127,7 +131,7 @@
     </p>
     <h3>2.3 通用操作区域</h3>
     <p>各标签页统一包含<strong>输入框</strong>（单行/多行）、<strong>功能按钮</strong>（计算/求解/开始计算），结果输出以<strong>独立弹窗</strong>呈现，支持弹窗内快捷操作。</p>
-    <hr>
+    <hr />
     <h2>3 核心功能操作</h2>
     <h3>3.1 代数/数值计算</h3>
     <p>适用于基础代数表达式化简、数值求值、极限、积分、求导、泰勒展开等单表达式运算。</p>
@@ -172,7 +176,8 @@
         </li>
         <li>
             <p>在<strong>微分方程的初始条件</strong>多行文本框中输入初始条件，<strong>每行一个，格式为</strong>
-                <strong><code>f(x)=y</code></strong>（如<code>f(0)=1</code>、<code>diff(f(x),x).subs(x,0)=2</code>）；</p>
+                <strong><code>f(x)=y</code></strong>（如<code>f(0)=1</code>、<code>diff(f(x),x).subs(x,0)=2</code>）；
+            </p>
         </li>
         <li>
             <p>点击<strong>求解</strong>按钮，程序弹出<strong>函数选择窗口</strong>，勾选目标函数（如<code>f</code>），点击「确定」；</p>
@@ -212,7 +217,7 @@
         </li>
     </ol>
     <p>例：对E求10位有效数字得到2.718281828</p>
-    <hr>
+    <hr />
     <h2>4 输入语法规范</h2>
     <p>本工具所有表达式、方程、约束条件、目标函数的输入<strong>均遵循Python标准语法</strong>，并补充数学运算专属语法规则，违规输入将触发语法错误提示，具体规则如下：</p>
     <h3>4.1 等号规则</h3>
@@ -253,15 +258,52 @@
                 </li>
             </ul>
             <p><strong>支持的变量假设</strong>（按「假设名、取值、含义」整理，可直接在命名空间管理中配置，基于sympy底层支持）：</p>
-            <p>|假设名|取值|含义|
-                |---|---|---|
-                |real|True/False|假设变量为实数（默认False，变量可取值为复数）；|
-                |integer|True/False|假设变量为整数，适用于整数运算、因式分解等场景；|
-                |positive|True/False|假设变量为正实数，避免对数、平方根运算出现无意义结果；|
-                |negative|True/False|假设变量为负实数，需结合具体运算场景使用；|
-                |nonzero|True/False|假设变量不为0，避免除法、倒数运算出现分母为0的错误；|
-                |positive_infinite|True/False|假设变量为非正无穷大，适用于极限、积分等运算；|
-                |negative_infinite|True/False|假设变量为非负无穷大，适用于极限、积分等运算。|</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>假设名</th>
+                        <th>取值</th>
+                        <th>含义</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>real</td>
+                        <td>True/False</td>
+                        <td>假设变量为实数（默认False，变量可取值为复数）；</td>
+                    </tr>
+                    <tr>
+                        <td>integer</td>
+                        <td>True/False</td>
+                        <td>假设变量为整数，适用于整数运算、因式分解等场景；</td>
+                    </tr>
+                    <tr>
+                        <td>positive</td>
+                        <td>True/False</td>
+                        <td>假设变量为正实数，避免对数、平方根运算出现无意义结果；</td>
+                    </tr>
+                    <tr>
+                        <td>negative</td>
+                        <td>True/False</td>
+                        <td>假设变量为负实数，需结合具体运算场景使用；</td>
+                    </tr>
+                    <tr>
+                        <td>nonzero</td>
+                        <td>True/False</td>
+                        <td>假设变量不为0，避免除法、倒数运算出现分母为0的错误；</td>
+                    </tr>
+                    <tr>
+                        <td>positive_infinite</td>
+                        <td>True/False</td>
+                        <td>假设变量为非正无穷大，适用于极限、积分等运算；</td>
+                    </tr>
+                    <tr>
+                        <td>negative_infinite</td>
+                        <td>True/False</td>
+                        <td>假设变量为非负无穷大，适用于极限、积分等运算。</td>
+                    </tr>
+                </tbody>
+            </table>
             <p>说明：可同时配置多个假设（如<code>real=True, positive=True</code>），假设之间用英文逗号分隔，不支持冲突假设（如同时配置<code>positive=True</code>和<code>negative=True</code>）。
             </p>
         </li>
@@ -301,20 +343,77 @@
             </ul>
             <p>非支持的假设输入将触发程序弹窗提示，无法保存；</p>
             <p><strong>支持的函数假设</strong>（按「假设名、取值、含义」整理，可直接在命名空间管理中配置，基于sympy底层支持）：</p>
-            <p>|假设名|取值|含义|
-                |---|---|---|
-                |real|True/False|假设函数为实值函数（默认False，函数可取值为复数）；|
-                |continuous|True/False|假设函数为连续函数，适用于积分、求导等微积分运算；|
-                |differentiable|True/False|假设函数为可导函数，确保求导运算正常执行；|
-                |positive|True/False|假设函数值域为正实数，适用于对数、平方根等运算；|
-                |negative|True/False|假设函数值域为负实数，需结合具体运算场景使用；|
-                |periodic|True/False|假设函数为周期函数，适用于三角函数相关运算。|
-                |real|True/False|假设函数为实值函数（默认False，函数可取值为复数）；|
-                |continuous|True/False|假设函数为连续函数，适用于积分、求导等微积分运算；|
-                |differentiable|True/False|假设函数为可导函数，确保求导运算正常执行；|
-                |positive|True/False|假设函数值域为正实数，适用于对数、平方根等运算；|
-                |negative|True/False|假设函数值域为负实数，需结合具体运算场景使用；|
-                |periodic|True/False|假设函数为周期函数，适用于三角函数相关运算。|</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>假设名</th>
+                        <th>取值</th>
+                        <th>含义</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>real</td>
+                        <td>True/False</td>
+                        <td>假设函数为实值函数（默认False，函数可取值为复数）；</td>
+                    </tr>
+                    <tr>
+                        <td>continuous</td>
+                        <td>True/False</td>
+                        <td>假设函数为连续函数，适用于积分、求导等微积分运算；</td>
+                    </tr>
+                    <tr>
+                        <td>differentiable</td>
+                        <td>True/False</td>
+                        <td>假设函数为可导函数，确保求导运算正常执行；</td>
+                    </tr>
+                    <tr>
+                        <td>positive</td>
+                        <td>True/False</td>
+                        <td>假设函数值域为正实数，适用于对数、平方根等运算；</td>
+                    </tr>
+                    <tr>
+                        <td>negative</td>
+                        <td>True/False</td>
+                        <td>假设函数值域为负实数，需结合具体运算场景使用；</td>
+                    </tr>
+                    <tr>
+                        <td>periodic</td>
+                        <td>True/False</td>
+                        <td>假设函数为周期函数，适用于三角函数相关运算。</td>
+                    </tr>
+                    <tr>
+                        <td>real</td>
+                        <td>True/False</td>
+                        <td>假设函数为实值函数（默认False，函数可取值为复数）；</td>
+                    </tr>
+                    <tr>
+                        <td>continuous</td>
+                        <td>True/False</td>
+                        <td>假设函数为连续函数，适用于积分、求导等微积分运算；</td>
+                    </tr>
+                    <tr>
+                        <td>differentiable</td>
+                        <td>True/False</td>
+                        <td>假设函数为可导函数，确保求导运算正常执行；</td>
+                    </tr>
+                    <tr>
+                        <td>positive</td>
+                        <td>True/False</td>
+                        <td>假设函数值域为正实数，适用于对数、平方根等运算；</td>
+                    </tr>
+                    <tr>
+                        <td>negative</td>
+                        <td>True/False</td>
+                        <td>假设函数值域为负实数，需结合具体运算场景使用；</td>
+                    </tr>
+                    <tr>
+                        <td>periodic</td>
+                        <td>True/False</td>
+                        <td>假设函数为周期函数，适用于三角函数相关运算。</td>
+                    </tr>
+                </tbody>
+            </table>
             <p>说明：可同时配置多个假设（如<code>real=True, continuous=True</code>），假设之间用英文逗号分隔，不支持冲突假设（如同时配置<code>positive=True</code>和<code>negative=True</code>）。
             </p>
         </li>
@@ -343,73 +442,324 @@
                 错误示范：<code>if</code>、<code>log</code></p>
         </li>
     </ol>
-    <hr>
+    <hr />
     <h2>5 全局函数/常数库调用</h2>
     <p>工具内置<code>glob</code>字典定义的<strong>数学常数</strong>和<strong>功能函数</strong>，可直接在所有输入框中调用，无需额外定义，调用格式严格遵循4.4函数规则，常数可直接使用。
     </p>
     <p>例：<code>E</code>、<code>sin(pi)</code></p>
     <h3>5.1 数学常数</h3>
-    <p>|标识符|功能说明|调用示例|备注|
-        |---|---|---|---|
-        |pi|圆周率 π（3.14159…）|pi|直接使用|
-        |E|自然常数 e（2.71828…）|E|直接使用|
-        |I|虚数单位 i（√-1）|I|直接使用|
-        |inf|无穷大|inf、+inf、-inf|多用于极限计算和数列计算|</p>
-    <h3>5.2 功能函数</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+                <th>备注</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>pi</td>
+                <td>圆周率 π（3.14159…）</td>
+                <td>pi</td>
+                <td>直接使用</td>
+            </tr>
+            <tr>
+                <td>E</td>
+                <td>自然常数 e（2.71828…）</td>
+                <td>E</td>
+                <td>直接使用</td>
+            </tr>
+            <tr>
+                <td>I</td>
+                <td>虚数单位 i（√-1）</td>
+                <td>I</td>
+                <td>直接使用</td>
+            </tr>
+            <tr>
+                <td>inf</td>
+                <td>无穷大</td>
+                <td>inf、+inf、-inf</td>
+                <td>多用于极限计算和数列计算</td>
+            </tr>
+            <tr>
+                <td>### 5.2 功能函数</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
     <p>按功能分类，调用示例严格遵循Python语法，参数需匹配函数要求，否则触发计算失败。</p>
     <h4>5.2.1 表达式处理</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |simp|表达式化简|simp(x<strong>2 + 2*x + 1)|
-            |factor|多项式因式分解|factor(x</strong>2 - 4)|
-        |logcombine|对数式合并|logcombine(ln(x) + ln(y))|</p>
-    <h4>5.2.2 基础运算</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |abs|绝对值计算|abs(-5)、abs(x-3)|
-        |sqrt|平方根计算|sqrt(16)、sqrt(x)|
-        |eval|数值求值|eval(pi, 5)（保留5位有效数字）|</p>
-    <h4>5.2.3 对数/指数（本工具无单独指数函数，用<code>**</code>实现，如<code>e^x</code>写为<code>E**x</code>）</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |ln|自然对数（以e为底）|ln(E)、ln(x)|
-        |lg|常用对数（以10为底）|lg(100)、lg(x)|
-        |log|自定义底数对数|log(8, 2)（以2为底8的对数）|</p>
-    <h4>5.2.4 微积分运算</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |diff|求导/微分|diff(x<strong>3, x)（对x求一阶导）、diff(sin(x),x,2)（二阶导）|
-            |int|积分|int(x</strong>2, x)（不定积分）、int(x, (x,0,1))（定积分，x从0到1）|</p>
-    <h4>5.2.5 极限/级数</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |lim|求极限|lim(sin(x)/x, x, 0)（x趋近于0）、lim(1/x, x, inf)（x趋近于无穷大）|
-        |taylor|泰勒级数展开|taylor(sin(x), x, 0, 5)（x=0处5阶展开）|</p>
-    <h4>5.2.6 三角函数/反三角函数</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |sin/cos/tan|正弦/余弦/正切|sin(pi/2)、cos(0)、tan(pi/4)|
-        |cot/sec/csc|余切/正割/余割|cot(pi/4)、sec(0)、csc(pi/6)|
-        |arcsin/arccos/arctan|反正弦/反余弦/反正切|arcsin(1)、arccos(0)、arctan(1)|
-        |arccot/arcsec/arccsc|反余切/反正割/反余割|arccot(1)、arcsec(2)、arccsc(2)|</p>
-    <h4>5.2.7 方程/根相关</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |solve|方程求解（底层）|solve(x<strong>2 - 4, x)|
-            |CRootOf|复数根表示|CRootOf(x</strong>3 - 1, 1)|
-        |ComplexRootOf|复数根（同CRootOf）|ComplexRootOf(x<strong>2 + 1, 0)|
-            |RootSum|根的和|RootSum(x</strong>2 - 2, lambda x: x)|
-        |rootof|多项式根|rootof(x**2 - 4, 0)|</p>
-    <h4>5.2.8 特殊函数</h4>
-    <p>|标识符|功能说明|调用示例|
-        |---|---|---|
-        |LambertW|朗伯W函数，求解方程w·e^w = z的解|LambertW(1)、LambertW(2, 0)|
-        |erf|误差函数，常用于概率、统计及偏微分方程|erf(0)、erf(1)、erf(x)|
-        |erfc|互补误差函数，erfc(x) = 1 - erf(x)|erfc(0)、erfc(1)、erfc(x)|
-        |gamma|伽马函数，阶乘的推广，Γ(n)=(n-1)!|gamma(5)、gamma(x)、gamma(0.5)|
-        |beta|贝塔函数，与伽马函数相关，常用于积分计算|beta(2,3)、beta(x,y)|
-        |zeta|黎曼ζ函数，常用于数论及分析领域|zeta(2)、zeta(3)、zeta(s)|</p>
-    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>simp</td>
+                <td>表达式化简</td>
+                <td>simp(x*<em>2 + 2</em>x + 1)</td>
+            </tr>
+            <tr>
+                <td>factor</td>
+                <td>多项式因式分解</td>
+                <td>factor(x**2 - 4)</td>
+            </tr>
+            <tr>
+                <td>logcombine</td>
+                <td>对数式合并</td>
+                <td>logcombine(ln(x) + ln(y))</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.2 基础运算</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>abs</td>
+                <td>绝对值计算</td>
+                <td>abs(-5)、abs(x-3)</td>
+            </tr>
+            <tr>
+                <td>sqrt</td>
+                <td>平方根计算</td>
+                <td>sqrt(16)、sqrt(x)</td>
+            </tr>
+            <tr>
+                <td>eval</td>
+                <td>数值求值</td>
+                <td>eval(pi, 5)（保留5位有效数字）</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.3 对数/指数（本工具无单独指数函数，用<code>**</code>实现，如<code>e^x</code>写为<code>E**x</code>）</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ln</td>
+                <td>自然对数（以e为底）</td>
+                <td>ln(E)、ln(x)</td>
+            </tr>
+            <tr>
+                <td>lg</td>
+                <td>常用对数（以10为底）</td>
+                <td>lg(100)、lg(x)</td>
+            </tr>
+            <tr>
+                <td>log</td>
+                <td>自定义底数对数</td>
+                <td>log(8, 2)（以2为底8的对数）</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.4 微积分运算</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>diff</td>
+                <td>求导/微分</td>
+                <td>diff(x**3, x)（对x求一阶导）、diff(sin(x),x,2)（二阶导）</td>
+            </tr>
+            <tr>
+                <td>int</td>
+                <td>积分</td>
+                <td>int(x**2, x)（不定积分）、int(x, (x,0,1))（定积分，x从0到1）</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.5 极限/级数</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>lim</td>
+                <td>求极限</td>
+                <td>lim(sin(x)/x, x, 0)（x趋近于0）、lim(1/x, x, inf)（x趋近于无穷大）</td>
+            </tr>
+            <tr>
+                <td>taylor</td>
+                <td>泰勒级数展开</td>
+                <td>taylor(sin(x), x, 0, 5)（x=0处5阶展开）</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.6 三角函数/反三角函数</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>sin/cos/tan</td>
+                <td>正弦/余弦/正切</td>
+                <td>sin(pi/2)、cos(0)、tan(pi/4)</td>
+            </tr>
+            <tr>
+                <td>cot/sec/csc</td>
+                <td>余切/正割/余割</td>
+                <td>cot(pi/4)、sec(0)、csc(pi/6)</td>
+            </tr>
+            <tr>
+                <td>arcsin/arccos/arctan</td>
+                <td>反正弦/反余弦/反正切</td>
+                <td>arcsin(1)、arccos(0)、arctan(1)</td>
+            </tr>
+            <tr>
+                <td>arccot/arcsec/arccsc</td>
+                <td>反余切/反正割/反余割</td>
+                <td>arccot(1)、arcsec(2)、arccsc(2)</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.7 方程/根相关</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>solve</td>
+                <td>方程求解（底层）</td>
+                <td>solve(x**2 - 4, x)</td>
+            </tr>
+            <tr>
+                <td>CRootOf</td>
+                <td>复数根表示</td>
+                <td>CRootOf(x**3 - 1, 1)</td>
+            </tr>
+            <tr>
+                <td>ComplexRootOf</td>
+                <td>复数根（同CRootOf）</td>
+                <td>ComplexRootOf(x**2 + 1, 0)</td>
+            </tr>
+            <tr>
+                <td>RootSum</td>
+                <td>根的和</td>
+                <td>RootSum(x**2 - 2, lambda x: x)</td>
+            </tr>
+            <tr>
+                <td>rootof</td>
+                <td>多项式根</td>
+                <td>rootof(x**2 - 4, 0)</td>
+            </tr>
+            <tr>
+                <td>#### 5.2.8 特殊函数</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>标识符</th>
+                <th>功能说明</th>
+                <th>调用示例</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>LambertW</td>
+                <td>朗伯W函数，求解方程w·e^w = z的解</td>
+                <td>LambertW(1)、LambertW(2, 0)</td>
+            </tr>
+            <tr>
+                <td>erf</td>
+                <td>误差函数，常用于概率、统计及偏微分方程</td>
+                <td>erf(0)、erf(1)、erf(x)</td>
+            </tr>
+            <tr>
+                <td>erfc</td>
+                <td>互补误差函数，erfc(x) = 1 - erf(x)</td>
+                <td>erfc(0)、erfc(1)、erfc(x)</td>
+            </tr>
+            <tr>
+                <td>gamma</td>
+                <td>伽马函数，阶乘的推广，Γ(n)=(n-1)!</td>
+                <td>gamma(5)、gamma(x)、gamma(0.5)</td>
+            </tr>
+            <tr>
+                <td>beta</td>
+                <td>贝塔函数，与伽马函数相关，常用于积分计算</td>
+                <td>beta(2,3)、beta(x,y)</td>
+            </tr>
+            <tr>
+                <td>zeta</td>
+                <td>黎曼ζ函数，常用于数论及分析领域</td>
+                <td>zeta(2)、zeta(3)、zeta(s)</td>
+            </tr>
+            <tr>
+                <td>---</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
     <h2>6 辅助功能</h2>
     <h3>6.1 命名空间管理</h3>
     <p>为工具核心自定义功能，用于管理变量、函数的定义与假设，点击顶部菜单栏「命名空间管理」即可打开，支持以下操作：</p>
@@ -440,7 +790,7 @@
             <p><strong>Esc</strong>：关闭当前打开的<strong>结果弹窗/选择窗口</strong>，返回主窗口，不影响主程序运行。</p>
         </li>
     </ol>
-    <hr>
+    <hr />
     <h2>7 注意事项</h2>
     <ol>
         <li>
@@ -451,7 +801,8 @@
         </li>
         <li>
             <p>微分方程初始条件<strong>必须严格遵循</strong> <strong><code>f(x)=y</code></strong>
-                <strong>格式</strong>，格式错误将导致求解失败，无结果输出；</p>
+                <strong>格式</strong>，格式错误将导致求解失败，无结果输出；
+            </p>
         </li>
         <li>
             <p>同时打开多个结果窗口时，建议及时关闭无用窗口，避免占用系统资源；</p>
@@ -469,24 +820,63 @@
             <p>使用「拉格朗日乘数」功能时，建议显式定义变量并添加<code>real:True</code>假设（参考<code>4.3</code>），因为拉格朗日乘数法在实数域的解才有意义。</p>
         </li>
     </ol>
-    <hr>
+    <hr />
     <h2>8 常见错误提示及解决</h2>
-    <p>|错误提示内容|错误原因|解决方法|
-        |---|---|---|
-        |内容不能为空|输入框为空时点击功能按钮|在对应输入框中按语法规范输入内容后，重新点击按钮|
-        |括号不匹配|输入内容中括号未闭合/多余|检查输入内容，补充缺失括号或删除多余括号|
-        |函数参数错误|函数参数数量/类型不匹配|按本说明书5.2函数调用示例，修正参数数量/类型|
-        |变量/函数名重复|显式定义的标识符重复|更换标识符，避免与已定义内容、内置常数/函数名重复|
-        |无效假设|命名空间管理中输入非支持假设|仅输入支持的数学假设（如<code>real=True</code>、<code>continuous=True</code>）|
-        |无解析解|待求解内容无数学解析解|检查输入内容是否正确，或更换为有解析解的表达式/方程|
-        |未定义标识符|调用未定义的变量/函数|若为普通变量，直接使用；若需添加假设，在命名空间管理器中定义|
-        <strong>本说明书最终解释权归Calculation-Terminator开发者所有，版本更新将同步更新说明书内容</strong>
-    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>错误提示内容</th>
+                <th>错误原因</th>
+                <th>解决方法</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>内容不能为空</td>
+                <td>输入框为空时点击功能按钮</td>
+                <td>在对应输入框中按语法规范输入内容后，重新点击按钮</td>
+            </tr>
+            <tr>
+                <td>括号不匹配</td>
+                <td>输入内容中括号未闭合/多余</td>
+                <td>检查输入内容，补充缺失括号或删除多余括号</td>
+            </tr>
+            <tr>
+                <td>函数参数错误</td>
+                <td>函数参数数量/类型不匹配</td>
+                <td>按本说明书5.2函数调用示例，修正参数数量/类型</td>
+            </tr>
+            <tr>
+                <td>变量/函数名重复</td>
+                <td>显式定义的标识符重复</td>
+                <td>更换标识符，避免与已定义内容、内置常数/函数名重复</td>
+            </tr>
+            <tr>
+                <td>无效假设</td>
+                <td>命名空间管理中输入非支持假设</td>
+                <td>仅输入支持的数学假设（如<code>real=True</code>、<code>continuous=True</code>）</td>
+            </tr>
+            <tr>
+                <td>无解析解</td>
+                <td>待求解内容无数学解析解</td>
+                <td>检查输入内容是否正确，或更换为有解析解的表达式/方程</td>
+            </tr>
+            <tr>
+                <td>未定义标识符</td>
+                <td>调用未定义的变量/函数</td>
+                <td>若为普通变量，直接使用；若需添加假设，在命名空间管理器中定义</td>
+            </tr>
+            <tr>
+                <td><strong>本说明书最终解释权归Calculation-Terminator开发者所有，版本更新将同步更新说明书内容</strong></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
     <p><strong>更新日期</strong>：对应项目仓库最新commit日期</p>
     <p><strong>项目仓库</strong>：<a
             href="https://github.com/HOMO-yuxihe/Calculation-Terminator">https://github.com/HOMO-yuxihe/Calculation-Terminator</a>
     </p>
-
 </body>
 
 </html>
