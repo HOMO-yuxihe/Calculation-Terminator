@@ -425,6 +425,7 @@ class MainWindow(WithSubwindow):
         
         if res[1]!=None:
             QMessageBox.warning(self,*res[1])
+            return
 
         self.windows.append(MultiSolvesOutputWindow(self,res[0]))
         

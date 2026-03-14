@@ -184,8 +184,8 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace)->Tuple[str,Tuple[str,Union
     result[0]=[]
     for i in solves:
         solve=sympy.simplify(Lag.subs(i))
+        i['result']=solve
         i={str(a):(str(b),sympy.latex(b)) for a,b in i.items()}
-        i['result']=str(solve)
         result[0].append(i)
     return result
 
