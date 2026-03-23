@@ -106,8 +106,8 @@ def simplify(exp:str):
     return (str(res:=sympy.simplify(parse_expr(exp))),sympy.latex(res))
 
 def parse_equality(eq:str,localDict:Dict[str,Union[sympy.Symbol,sympy.Function]]={},eq0:bool=False):
-    if eq.count('=')>1:
-        return [None,1]
+    if (cnt:=eq.count('='))>1:
+        raise SyntaxError(f'表达式最多只能有1个等号，而此表达式有{cnt}个等号')
     
     if eq.count('=')==0:
         eq+='=0'
@@ -116,7 +116,7 @@ def parse_equality(eq:str,localDict:Dict[str,Union[sympy.Symbol,sympy.Function]]
 
     if eq0:
         return [rhs-lhs,0]
-    return [sympy.Eq(lhs,rhs),0]
+    return sympy.Eq(lhs,rhs)
 
 def calc(exp:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,str]]]]:
     '''
@@ -159,9 +159,7 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace)->Tuple[str,Tuple[str,Union
     lm_exprs:List[sympy.Expr]=[]
     for i,j in enumerate(lm):
         try:
-            if (res:=parse_equality(j,local,True))[1]==1:
-                return [None,('语法错误',f'每条表达式最多有1个等号，而第{i+1}条表达式存在多于2个等号。')]
-            lm_exprs.append(res[0])
+            lm_exprs.append(parse_equality(j,local,True))
         except SyntaxError as e:
             result[1]=('语法错误',f'第{i+1}条约束条件存在语法错误:'+syntaxErrTranslate(e))
             return result
@@ -213,9 +211,7 @@ def smartsolver(expr:List[str],namespace:Namespace):
     exprs=[]
     for i,j in enumerate(expr):
         try:
-            if (res:=parse_equality(j,local))[1]==1:
-                return [None,('语法错误',f'每条表达式最多有1个等号，而第{i+1}条表达式存在多于2个等号。')]
-            exprs.append(res[0])
+            exprs.append(parse_equality(j,local))
         except SyntaxError as e:
             return [None,('语法错误',f'第{i+1}条表达式存在语法错误:'+syntaxErrTranslate(e))]
         except Exception as e:
@@ -255,9 +251,7 @@ def dsolver(expr:List[str],namespace:Namespace,ics:List[str]=[]):
     exprs=[]
     for i,j in enumerate(expr):
         try:
-            if (res:=parse_equality(j,local))[1]==1:
-                return [None,('语法错误',f'每条表达式最多有1个等号，而第{i+1}条表达式存在多于2个等号。')]
-            exprs.append(res[0])
+            exprs.append(parse_equality(j,local))
         except SyntaxError as e:
             return [None,('语法错误',f'第{i+1}条表达式存在语法错误:'+syntaxErrTranslate(e))]
         except Exception as e:
