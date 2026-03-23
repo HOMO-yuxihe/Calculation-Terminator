@@ -77,9 +77,12 @@ def latex2svg(tex:str,font_size=12,margin=0.2):
 def expr2latex(expr:str):
     if not (expr:=expr.strip()):return ''
     eq=0
-    if '=' in expr:
-        eq=1
-        lhs,rhs=expr.split('=',1)
+    if (cnt:=expr.count('='))>0:
+        if cnt==1:
+            eq=1
+            lhs,rhs=expr.split('=',1)
+        else:
+            raise SyntaxError(f'表达式最多只能有1个等号，而此表达式有{cnt}个等号')
     gd=global_dict_default.copy()
     gd.update(glob)
     gd.update(preview_gdict_override)

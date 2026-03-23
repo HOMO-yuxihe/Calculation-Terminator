@@ -8,7 +8,10 @@ def parse_expr(expr:str,local_dict:Dict=None,global_dict:Dict=None,evaluate:bool
     return res
 
 def syntaxErrTranslate(e:SyntaxError):
-    args=e.args[1]
+    try:
+        args=e.args[1]
+    except IndexError:
+        return e.args[0]
     print(args)
     fname=args[0]
     start=args[2]
