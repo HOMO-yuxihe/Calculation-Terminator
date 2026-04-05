@@ -1,14 +1,14 @@
 import sys,time
 sys.path.append('src')
 from keyword import iskeyword
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication, QFrame,QLabel,QMainWindow,QTabWidget,
     QWidget,QVBoxLayout,QHBoxLayout,QTextEdit,
-    QPushButton,QAction,QScrollArea,QLineEdit,
-    QShortcut,QInputDialog,QListView,QMenuBar,
+    QPushButton,QScrollArea,QLineEdit,
+    QInputDialog,QListView,QMenuBar,
     QMenu,QMessageBox,QDialog)
-from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent,QDesktopServices
-from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex,QUrl
+from PySide6.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent,QDesktopServices,QAction,QShortcut
+from PySide6.QtCore import Qt,QTimer,QModelIndex,QUrl
 import calcterm.core.calc as parser
 import calcterm.core.exception_parser as err
 from calcterm.widgets.common import *

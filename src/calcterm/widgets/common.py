@@ -1,11 +1,11 @@
 import sys
 from typing import List,Tuple
-from PyQt5.QtWidgets import (QHBoxLayout,QListView,QMessageBox,
-                             QPushButton, QTextEdit,QAction,QLineEdit,
-                             QWidget,QScrollArea,QVBoxLayout,QShortcut,
+from PySide6.QtWidgets import (QHBoxLayout,QListView,QMessageBox,
+                             QPushButton, QTextEdit,QLineEdit,
+                             QWidget,QScrollArea,QVBoxLayout,
                              QCheckBox,QMainWindow)
-from PyQt5.QtGui import QKeySequence,QKeyEvent, QStandardItem, QStandardItemModel
-from PyQt5.QtCore import Qt,QTimer,QEvent
+from PySide6.QtGui import QKeySequence,QKeyEvent, QStandardItem, QStandardItemModel,QAction,QShortcut
+from PySide6.QtCore import Qt,QTimer,QEvent
 
 class Subwindow(QMainWindow):
     def __init__(self,parent):

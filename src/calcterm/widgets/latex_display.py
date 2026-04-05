@@ -1,8 +1,9 @@
-from PyQt5.QtCore import QByteArray, QRectF, Qt
-from PyQt5.QtGui import QFont, QPainter,QWheelEvent
-from PyQt5.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
-from PyQt5.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
-from PyQt5.QtSvg import QGraphicsSvgItem, QSvgRenderer
+from PySide6.QtCore import QByteArray, QRectF, Qt
+from PySide6.QtGui import QFont, QPainter,QWheelEvent
+from PySide6.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
+from PySide6.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtSvgWidgets import QGraphicsSvgItem
 import sys
 sys.path.append('src')
 

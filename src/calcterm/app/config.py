@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QFont
+from PySide6.QtGui import QFont
 
 font1=QFont('Microsoft YaHei',12)
 font2=QFont('Consolas',18)

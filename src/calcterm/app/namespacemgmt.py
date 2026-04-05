@@ -2,10 +2,10 @@ from keyword import iskeyword
 import sys
 sys.path.append('src')
 
-from PyQt5.QtGui import QFont, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QListView, QMainWindow, QMessageBox,
+from PySide6.QtGui import QFont, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QListView, QMainWindow, QMessageBox,
                              QPushButton, QTabWidget, QTextEdit, QVBoxLayout, QWidget)
-from PyQt5.QtCore import QModelIndex, Qt
+from PySide6.QtCore import QModelIndex, Qt
 
 from calcterm.core.struct_template import *
 from calcterm.app.config import *
