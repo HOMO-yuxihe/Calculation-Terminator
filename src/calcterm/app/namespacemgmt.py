@@ -3,7 +3,7 @@ import sys
 sys.path.append('src')
 
 from PySide6.QtGui import QFont, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QListView, QMainWindow, QMessageBox,
+from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QListView, QMessageBox,
                              QPushButton, QTabWidget, QTextEdit, QVBoxLayout, QWidget)
 from PySide6.QtCore import QModelIndex, Qt
 
@@ -26,7 +26,6 @@ class VariableModifier(QDialog):
         self.setWindowTitle('修改变量')
         # self.setMinimumSize(200,100)
         self.setFont(font1)
-        self.setSizePolicy(0,0)
 
         self.mainLayout=QVBoxLayout()
         self.setLayout(self.mainLayout)
