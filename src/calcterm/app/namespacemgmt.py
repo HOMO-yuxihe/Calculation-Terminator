@@ -107,7 +107,6 @@ class FunctionModifier(QDialog):
         self.setWindowTitle('修改函数')
         # self.setMinimumSize(200,100)
         self.setFont(font1)
-        self.setSizePolicy(0,0)
 
         self.mainLayout=QVBoxLayout()
         self.setLayout(self.mainLayout)
