@@ -92,7 +92,7 @@ class OutputWindow(Subwindow):
         if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
             if (result:=parser.evalf(content,digit[0])) is not None:
                 try:
-                    self.windows.append(EvaluateOutput(self,content,result,self.latex))
+                    self.par.windows.append(EvaluateOutput(self.par,content,result,self.latex))
                 except Exception as e:
                     QMessageBox.warning(self,'无法求值',f'求值时出现错误：\n{e}')
             else:
