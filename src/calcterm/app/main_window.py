@@ -273,7 +273,7 @@ class MainWindow(WithSubwindow):
         self.helpMenu=QMenu('帮助',self)
         self.helpaction=QAction('打开帮助文档',self.helpMenu,triggered=self.help)
         self.about=QAction('关于',self.helpMenu,triggered=lambda:
-                           QMessageBox.information(self,'关于','项目名：Calculation-Terminator\n版权所有：yuxihe\n版本:v0.4.4.1'))
+                           QMessageBox.information(self,'关于','项目名：Calculation-Terminator\n版权所有：yuxihe\n版本:v0.5'))
         self.helpMenu.addActions([self.helpaction,self.about])
 
         self.menubar.addMenu(self.helpMenu)
