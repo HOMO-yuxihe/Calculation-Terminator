@@ -115,7 +115,7 @@ def parse_equality(eq:str,localDict:Dict[str,Union[sympy.Symbol,sympy.Function]]
     lhs,rhs=map(lambda x:parse_expr(x,local_dict=localDict,global_dict=glob),eq.split('='))
 
     if eq0:
-        return [rhs-lhs,0]
+        return sympy.Eq(rhs-lhs,0)
     return sympy.Eq(lhs,rhs)
 
 def calc(exp:str,namespace:Namespace)->Tuple[str,Tuple[str,Union[None,Tuple[str,str]]]]:
@@ -159,7 +159,7 @@ def lagrange(lm:List[str],tg:str,namespace:Namespace)->Tuple[str,Tuple[str,Union
     lm_exprs:List[sympy.Expr]=[]
     for i,j in enumerate(lm):
         try:
-            lm_exprs.append(parse_equality(j,local,True))
+            lm_exprs.append((i:=parse_equality(j,local,True)).lhs-i.rhs)
         except SyntaxError as e:
             result[1]=('语法错误',f'第{i+1}条约束条件存在语法错误:'+syntaxErrTranslate(e))
             return result
