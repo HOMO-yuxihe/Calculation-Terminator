@@ -14,8 +14,8 @@ description = "基于PyQt5+SymPy的科学计算器"
 readme = "README.md"
 requires-python = ">=3.8"  # 适配你的Python版本
 dependencies = [
-  "PyQt5>=5.15.0",
-  "sympy>=1.11"
+  "PySide6>=6.11.0",
+  "sympy>=1.14.0"
 ]
 
 [tool.setuptools]
