@@ -101,7 +101,7 @@ class MultiLineEdit(QWidget):
         self.content_layout = QVBoxLayout(self.content_widget,spacing=8)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         if content:
-            print(content)
+            # print(content)
             self.lines = [self._LineEdit(self,True,text=i) for i in content]
             self.lines[0].returnPressed.connect(lambda: self.add(self.lines[0]))
             self.lines[0].canBeDeleted=False
@@ -127,7 +127,8 @@ class MultiLineEdit(QWidget):
             self.content_layout.removeWidget(obj)
             obj.deleteLater()
         except Exception as e:
-            print(e)
+            # print(e)
+            pass
 
     # def deleteNxt(self,obj:QWidget):
     #             try:

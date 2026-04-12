@@ -33,7 +33,7 @@ class EvaluateOutput(Subwindow):
                 triggered=lambda:self.par.windows.append((LatexOutput(srclatex,True))))] if self.latex else [],
                 src,font=font2,readOnly=1)
         self.resultTip=QLabel('求值结果',font=font1)
-        print(type(result))
+        # print(type(result))
         self.result=QTextEdit(result,font=font2,readOnly=1)
 
         self.main_layout.addWidget(self.srcTip)
@@ -129,7 +129,7 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
             
             def eval(self):
                 content=self.val.text()
-                print(content)
+                # print(content)
                 if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
                     if (result:=parser.evalf(content,digit[0])) is not None:
                         try:
@@ -361,7 +361,7 @@ class MainWindow(WithSubwindow):
             QMessageBox.warning(self,*result[1])
             return
 
-        print(result)
+        # print(result)
         self.windows.append(OutputWindow(self,*result[0]))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))

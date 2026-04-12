@@ -86,7 +86,7 @@ class LatexOutput(QMainWindow):
         self.central=QWidget()
         self.main_layout=QVBoxLayout()
         try:
-            print(expr.strip())
+            # print(expr.strip())
             self.display=LatexDisplay((exp if raw else expr2latex(exp))) if (exp:=expr.strip()) else (QLabel('预览内容为空'))
         except SyntaxError as e:
             QMessageBox.warning(self,'错误',f'表达式有语法错误，请更正后再试。\n错误详情:{err.syntaxErrTranslate(e)}')
