@@ -23,22 +23,15 @@ class LatexDisplay(QWidget):
                 self.scale(factor, factor)
                 event.accept()
 
-            elif event.modifiers() & Qt.ShiftModifier:
-                horizontal_wheel_event = QWheelEvent(
-                    event.pos(),
-                    event.globalPos(),
-                    event.pixelDelta(),
-                    event.angleDelta(),
-                    event.angleDelta().x() if event.angleDelta().x() != 0 else event.angleDelta().y(),  # qt4Delta
-                    Qt.Horizontal,
-                    event.buttons(),
-                    Qt.KeyboardModifiers(),
-                    event.phase(),
-                    event.inverted(),
-                    event.source()
+            elif event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                delta=event.angleDelta().y()
+                step=self.horizontalScrollBar().singleStep()*(delta / 120)
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value()-step
                 )
-                QApplication.sendEvent(self.horizontalScrollBar(),horizontal_wheel_event)
+                event.accept()
             else:
+                event.angleDelta().y()
                 return super().wheelEvent(event)
     def __init__(self,tex:str,font_size=12,*args,**kw):
         super().__init__(*args,**kw)
