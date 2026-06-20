@@ -8,6 +8,7 @@ from io import BytesIO
 
 from calcterm.core.exception_parser import parse_expr
 from calcterm.core.calc import glob
+from calcterm.core.latex_override_class import *
 
 global_dict_default={}
 exec('from sympy import *',global_dict_default)
@@ -18,6 +19,8 @@ preview_gdict_override={
     'lim':sympy.Limit,
     'sum':sympy.Sum,
     'product':sympy.Product,
+    'nCr':LatexBinomial,
+    'nPr':LatexFallingFactorial
 }
 
 plt.rcParams['text.usetex']=False
@@ -100,7 +103,7 @@ if __name__ == '__main__':
     pass
     # text = r'$x^2+y^2=z^2$'
     # print(latex_formula2svg(text,font_size=12))
-    expr='-a*b/(c*d)'
+    expr='nPr(5,3)+nCr(5,3)'
     tex=expr2latex(expr)
     print(tex)
     # print(latex2svg(tex))
