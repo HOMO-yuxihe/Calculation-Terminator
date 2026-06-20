@@ -47,6 +47,8 @@ glob={
     'gamma':sympy.gamma,
     'beta':sympy.beta,
     'zeta':sympy.zeta,
+    'nCr':sympy.binomial,
+    'nPr':lambda n,r:sympy.binomial(n,r)*sympy.factorial(r),
 
     'CRootOf':sympy.CRootOf,
     'ComplexRootOf':sympy.ComplexRootOf,

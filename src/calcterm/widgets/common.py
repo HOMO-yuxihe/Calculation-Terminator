@@ -1,11 +1,11 @@
 import sys
 from typing import List,Tuple
-from PyQt5.QtWidgets import (QHBoxLayout,QListView,QMessageBox,
-                             QPushButton, QTextEdit,QAction,QLineEdit,
-                             QWidget,QScrollArea,QVBoxLayout,QShortcut,
+from PySide6.QtWidgets import (QHBoxLayout,QListView,QMessageBox,
+                             QPushButton, QTextEdit,QLineEdit,
+                             QWidget,QScrollArea,QVBoxLayout,
                              QCheckBox,QMainWindow)
-from PyQt5.QtGui import QKeySequence,QKeyEvent, QStandardItem, QStandardItemModel
-from PyQt5.QtCore import Qt,QTimer,QEvent
+from PySide6.QtGui import QKeySequence,QKeyEvent, QStandardItem, QStandardItemModel,QAction,QShortcut
+from PySide6.QtCore import Qt,QTimer,QEvent
 
 class Subwindow(QMainWindow):
     def __init__(self,parent):
@@ -101,7 +101,7 @@ class MultiLineEdit(QWidget):
         self.content_layout = QVBoxLayout(self.content_widget,spacing=8)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         if content:
-            print(content)
+            # print(content)
             self.lines = [self._LineEdit(self,True,text=i) for i in content]
             self.lines[0].returnPressed.connect(lambda: self.add(self.lines[0]))
             self.lines[0].canBeDeleted=False
@@ -127,7 +127,8 @@ class MultiLineEdit(QWidget):
             self.content_layout.removeWidget(obj)
             obj.deleteLater()
         except Exception as e:
-            print(e)
+            # print(e)
+            pass
 
     # def deleteNxt(self,obj:QWidget):
     #             try:

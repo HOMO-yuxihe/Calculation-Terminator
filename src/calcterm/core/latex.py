@@ -93,7 +93,7 @@ def expr2latex(expr:str):
         else:
             expression=parse_expr(expr,global_dict=gd)
     expression=remove_mul_1(expression)
-    print(expression)
+    # print(expression)
     return sympy.latex(expression,mode='plain',order='none')
 
 if __name__ == '__main__':

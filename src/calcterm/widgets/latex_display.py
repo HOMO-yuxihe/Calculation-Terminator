@@ -1,8 +1,9 @@
-from PyQt5.QtCore import QByteArray, QRectF, Qt
-from PyQt5.QtGui import QFont, QPainter,QWheelEvent
-from PyQt5.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
-from PyQt5.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
-from PyQt5.QtSvg import QGraphicsSvgItem, QSvgRenderer
+from PySide6.QtCore import QByteArray, QRectF, Qt
+from PySide6.QtGui import QFont, QPainter,QWheelEvent
+from PySide6.QtWidgets import QApplication, QLabel, QMessageBox,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
+from PySide6.QtWidgets import QApplication,QWidget,QVBoxLayout,QGraphicsScene,QGraphicsView
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtSvgWidgets import QGraphicsSvgItem
 import sys
 sys.path.append('src')
 
@@ -22,22 +23,15 @@ class LatexDisplay(QWidget):
                 self.scale(factor, factor)
                 event.accept()
 
-            elif event.modifiers() & Qt.ShiftModifier:
-                horizontal_wheel_event = QWheelEvent(
-                    event.pos(),
-                    event.globalPos(),
-                    event.pixelDelta(),
-                    event.angleDelta(),
-                    event.angleDelta().x() if event.angleDelta().x() != 0 else event.angleDelta().y(),  # qt4Delta
-                    Qt.Horizontal,
-                    event.buttons(),
-                    Qt.KeyboardModifiers(),
-                    event.phase(),
-                    event.inverted(),
-                    event.source()
+            elif event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                delta=event.angleDelta().y()
+                step=self.horizontalScrollBar().singleStep()*(delta / 120)
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value()-step
                 )
-                QApplication.sendEvent(self.horizontalScrollBar(),horizontal_wheel_event)
+                event.accept()
             else:
+                event.angleDelta().y()
                 return super().wheelEvent(event)
     def __init__(self,tex:str,font_size=12,*args,**kw):
         super().__init__(*args,**kw)
@@ -85,7 +79,7 @@ class LatexOutput(QMainWindow):
         self.central=QWidget()
         self.main_layout=QVBoxLayout()
         try:
-            print(expr.strip())
+            # print(expr.strip())
             self.display=LatexDisplay((exp if raw else expr2latex(exp))) if (exp:=expr.strip()) else (QLabel('预览内容为空'))
         except SyntaxError as e:
             QMessageBox.warning(self,'错误',f'表达式有语法错误，请更正后再试。\n错误详情:{err.syntaxErrTranslate(e)}')

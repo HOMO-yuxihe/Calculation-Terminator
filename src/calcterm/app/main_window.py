@@ -1,14 +1,14 @@
 import sys,time
 sys.path.append('src')
 from keyword import iskeyword
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication, QFrame,QLabel,QMainWindow,QTabWidget,
     QWidget,QVBoxLayout,QHBoxLayout,QTextEdit,
-    QPushButton,QAction,QScrollArea,QLineEdit,
-    QShortcut,QInputDialog,QListView,QMenuBar,
+    QPushButton,QScrollArea,QLineEdit,
+    QInputDialog,QListView,QMenuBar,
     QMenu,QMessageBox,QDialog)
-from PyQt5.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent,QDesktopServices
-from PyQt5.QtCore import Qt,QTimer,pyqtSignal,QModelIndex,QUrl
+from PySide6.QtGui import QFont,QKeySequence,QStandardItem,QStandardItemModel,QKeyEvent,QDesktopServices,QAction,QShortcut
+from PySide6.QtCore import Qt,QTimer,QModelIndex,QUrl
 import calcterm.core.calc as parser
 import calcterm.core.exception_parser as err
 from calcterm.widgets.common import *
@@ -33,7 +33,7 @@ class EvaluateOutput(Subwindow):
                 triggered=lambda:self.par.windows.append((LatexOutput(srclatex,True))))] if self.latex else [],
                 src,font=font2,readOnly=1)
         self.resultTip=QLabel('求值结果',font=font1)
-        print(type(result))
+        # print(type(result))
         self.result=QTextEdit(result,font=font2,readOnly=1)
 
         self.main_layout.addWidget(self.srcTip)
@@ -129,7 +129,7 @@ class MultiSolvesOutputWindow(Subwindow,WithSubwindow):
             
             def eval(self):
                 content=self.val.text()
-                print(content)
+                # print(content)
                 if (digit:=QInputDialog.getInt(self,'高精度计算','有效数字位数',15))[1]:
                     if (result:=parser.evalf(content,digit[0])) is not None:
                         try:
@@ -273,7 +273,7 @@ class MainWindow(WithSubwindow):
         self.helpMenu=QMenu('帮助',self)
         self.helpaction=QAction('打开帮助文档',self.helpMenu,triggered=self.help)
         self.about=QAction('关于',self.helpMenu,triggered=lambda:
-                           QMessageBox.information(self,'关于','项目名：Calculation-Terminator\n版权所有：yuxihe\n版本:v0.4.4.1'))
+                           QMessageBox.information(self,'关于','项目名：Calculation-Terminator\n版权所有：yuxihe\n版本:v0.5'))
         self.helpMenu.addActions([self.helpaction,self.about])
 
         self.menubar.addMenu(self.helpMenu)
@@ -361,7 +361,7 @@ class MainWindow(WithSubwindow):
             QMessageBox.warning(self,*result[1])
             return
 
-        print(result)
+        # print(result)
         self.windows.append(OutputWindow(self,*result[0]))
         self.calc_calc.setDisabled(1)
         QTimer.singleShot(100,lambda:self.calc_calc.setDisabled(0))
