@@ -20,7 +20,8 @@ preview_gdict_override={
     'sum':sympy.Sum,
     'product':sympy.Product,
     'nCr':LatexBinomial,
-    'nPr':LatexFallingFactorial
+    'nPr':LatexFallingFactorial,
+    'Float':sympy.Float,
 }
 
 plt.rcParams['text.usetex']=False
